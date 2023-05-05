@@ -1,0 +1,13 @@
+BBBB                 d b
+B   B                d b
+BBBB  rrr eee  aa  ddd bbb  ooo x x
+B   B r   e e a a d  d b  b o o  x
+BBBB  r   ee  aaa  ddd bbb  ooo x x
+
+Have you ever wanted a game engine that was based on the Elm architecture and
+was designed to run on older computers? No? Well, I did it anyways.
+
+Breadbox is an open source game engine designed to run on 3D-capable consoles
+and workstations such as the Nintendo 64 and the SGI Indigo. Simply load the
+source code onto a floppy disk, visit your nearest Unix workstation, and compile
+the engine for your desired platform.
