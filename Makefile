@@ -1,4 +1,7 @@
-.PHONY: clean tools
+.PHONY: clean tools unix-glx
+
+unix-glx:
+	$(MAKE) -C src/system/unix-glx
 
 tools: build/tools/bbconv build/tools/bbpack
 
