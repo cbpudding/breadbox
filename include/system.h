@@ -5,7 +5,10 @@
 
 // This is how the system layer sends events to the engine layer. ~Alex
 typedef enum {
-    BBMSG_PLACEHOLDER
+    // Tell the engine that a tick has passed
+    BBMSG_TICK,
+    // Tell the engine that it is time to re-render
+    BBMSG_VIEW
 } breadbox_message_t;
 
 // This function should render the given model so the player can see the
