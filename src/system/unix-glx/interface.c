@@ -4,7 +4,7 @@
 #include <GL/glx.h>
 #include <X11/Xlib.h>
 
-#include "interface.h"
+#include "system.h"
 
 // I know that global variables are bad, but I really need a way to clean up
 // the main function. ~Alex
