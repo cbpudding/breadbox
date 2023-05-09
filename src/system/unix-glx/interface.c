@@ -1,72 +1,84 @@
 #include <stdio.h>
+#include <time.h>
 
 #include <GL/gl.h>
 #include <GL/glx.h>
 #include <X11/Xlib.h>
 
-#include "system.h"
+#include "breadbox.h"
 
-// I know that global variables are bad, but I really need a way to clean up
-// the main function. ~Alex
-GLXContext context;
-Display *display;
-Window window;
+const GLint attr[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
+
+// Because who doesn't like global variables? *cries in ANSI C* ~Alex
+Display *DISPLAY;
+Window WINDOW;
+
+int create_window(XVisualInfo *visinfo) {
+    Colormap colormap;
+    Window root;
+    XSetWindowAttributes setwinattr;
+    // TODO: If any of the following fails, how should it be handled? ~Alex
+    root = DefaultRootWindow(DISPLAY);
+    colormap = XCreateColormap(DISPLAY, root, visinfo->visual, AllocNone);
+    setwinattr.colormap = colormap;
+    setwinattr.event_mask = ExposureMask | KeyPressMask;
+    WINDOW = XCreateWindow(DISPLAY, root, 0, 0, 640, 480, 0, visinfo->depth, InputOutput, visinfo->visual, CWColormap | CWEventMask, &setwinattr);
+    return 0;
+}
 
 int main(int argc, char *argv[]) {
     int alive = 1;
-    GLint attr[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
-    Colormap colormap;
+    GLXContext context;
+    breadbox_t engine;
+    clock_t epoch = clock();
     XEvent event;
-    XSetWindowAttributes setwinattr;
     XVisualInfo *visinfo;
-    XWindowAttributes winattr;
-    if(!(display = XOpenDisplay(NULL))) {
-        puts("Unable to connect to X server!");
+    DISPLAY = XOpenDisplay(NULL);
+    if(!DISPLAY) {
+        puts("main: Unable to connect to X server!");
         return 1;
     }
-    if(!(visinfo = glXChooseVisual(display, 0, attr))) {
-        puts("No compatible visual found");
-        XCloseDisplay(display);
+    visinfo = glXChooseVisual(DISPLAY, 0, (int *)attr);
+    if(!visinfo) {
+        puts("main: No compatible visual found!");
+        XCloseDisplay(DISPLAY);
         return 1;
     }
-    colormap = XCreateColormap(display, DefaultRootWindow(display), visinfo->visual, AllocNone);
-    setwinattr.colormap = colormap;
-    setwinattr.event_mask = ExposureMask | KeyPressMask;
-    window = XCreateWindow(display, DefaultRootWindow(display), 0, 0, 640, 480, 0, visinfo->depth, InputOutput, visinfo->visual, CWColormap | CWEventMask, &setwinattr);
-    XMapWindow(display, window);
-    XStoreName(display, window, "Breadbox");
-    context = glXCreateContext(display, visinfo, NULL, GL_TRUE);
+    if(create_window(visinfo)) {
+        puts("main: Unable to create WINDOW!");
+        XCloseDisplay(DISPLAY);
+        return 1;
+    }
+    XMapWindow(DISPLAY, WINDOW);
+    XStoreName(DISPLAY, WINDOW, "Breadbox");
+    context = glXCreateContext(DISPLAY, visinfo, NULL, GL_TRUE);
+    if(!context) {
+        puts("main: Failed to create GL context!");
+        XDestroyWindow(DISPLAY, WINDOW);
+        XCloseDisplay(DISPLAY);
+        return 1;
+    }
     // XSelectInput needs to happen after glXCreateContext because OpenGL fails
     // to load otherwise. ~Alex
-    XSelectInput(display, window, StructureNotifyMask);
-    glXMakeCurrent(display, window, context);
+    XSelectInput(DISPLAY, WINDOW, StructureNotifyMask);
+    glXMakeCurrent(DISPLAY, WINDOW, context);
     glEnable(GL_DEPTH_TEST);
     while(alive) {
-        XNextEvent(display, &event);
-        switch(event.type) {
-            case DestroyNotify:
-                alive = 0;
-                break;
-            case Expose:
-                XGetWindowAttributes(display, window, &winattr);
-                glViewport(0, 0, winattr.width, winattr.height);
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-                glBegin(GL_TRIANGLES);
-                glColor3f(1.0, 0.0, 0.0);
-                glVertex2f(-0.5, -0.5);
-                glColor3f(0.0, 1.0, 0.0);
-                glVertex2f(0.0, 0.5);
-                glColor3f(0.0, 0.0, 1.0);
-                glVertex2f(0.5, -0.5);
-                glEnd();
-                glXSwapBuffers(display, window);
-                break;
-            default:
-                break;
+        if(XCheckWindowEvent(DISPLAY, WINDOW, StructureNotifyMask, &event)) {
+            switch(event.type) {
+                case DestroyNotify:
+                    alive = 0;
+                    break;
+                case Expose:
+                    // TODO: Fire BBMSG_VIEW ~Alex
+                    break;
+                default:
+                    break;
+            }
         }
     }
-    glXMakeCurrent(display, None, NULL);
-    glXDestroyContext(display, context);
-    XCloseDisplay(display);
+    glXMakeCurrent(DISPLAY, None, NULL);
+    glXDestroyContext(DISPLAY, context);
+    XCloseDisplay(DISPLAY);
     return 0;
 }
