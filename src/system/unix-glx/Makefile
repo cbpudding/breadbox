@@ -3,7 +3,7 @@ CFLAGS=-I../../../include
 SRCDIR=../..
 OUTDIR=../../../build/unix-glx
 
-$(OUTDIR)/libbreadbox.a: $(OUTDIR)/breadbox.o $(OUTDIR)/model.o $(OUTDIR)/subscriptions.o $(OUTDIR)/system/interface.o $(OUTDIR)/system/view.o
+$(OUTDIR)/libbreadbox.a: $(OUTDIR)/model.o $(OUTDIR)/subscriptions.o $(OUTDIR)/system/interface.o $(OUTDIR)/system/view.o
 	$(AR) rcs $@ $^
 
 $(OUTDIR)/system/%.o: $(SRCDIR)/system/unix-glx/%.c

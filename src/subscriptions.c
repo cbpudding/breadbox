@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "breadbox.h"
 
 void breadbox_publish(breadbox_t *engine, breadbox_message_t *msg) {
@@ -6,6 +8,7 @@ void breadbox_publish(breadbox_t *engine, breadbox_message_t *msg) {
             breadbox_view(&engine->model);
             break;
         default:
+            breadbox_update(&engine->model, msg);
             break;
     }
 }

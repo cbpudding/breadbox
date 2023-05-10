@@ -7,7 +7,9 @@
 
 #include "breadbox.h"
 
-const GLint attr[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
+#define CLOCKS_PER_TICK (CLOCKS_PER_SEC / BREADBOX_TICKRATE)
+
+const GLint GL_ATTR[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
 
 // Because who doesn't like global variables? *cries in ANSI C* ~Alex
 Display *DISPLAY;
@@ -32,13 +34,19 @@ int main(int argc, char *argv[]) {
     breadbox_t engine;
     clock_t epoch = clock();
     XEvent event;
+    breadbox_message_t msg;
     XVisualInfo *visinfo;
+    XWindowAttributes winattr;
+    // IMPORTANT NOTE: We should have a *proper* initialization function for the
+    // engine, however this will do for development/testing. If this makes it
+    // into the final release, you have my permission to slap me. ~Alex
+    engine.tick = 0;
     DISPLAY = XOpenDisplay(NULL);
     if(!DISPLAY) {
         puts("main: Unable to connect to X server!");
         return 1;
     }
-    visinfo = glXChooseVisual(DISPLAY, 0, (int *)attr);
+    visinfo = glXChooseVisual(DISPLAY, 0, (int *)GL_ATTR);
     if(!visinfo) {
         puts("main: No compatible visual found!");
         XCloseDisplay(DISPLAY);
@@ -63,18 +71,31 @@ int main(int argc, char *argv[]) {
     XSelectInput(DISPLAY, WINDOW, StructureNotifyMask);
     glXMakeCurrent(DISPLAY, WINDOW, context);
     glEnable(GL_DEPTH_TEST);
+    // NOTE: If the window ever gets resized, then we'll need to run these two
+    // again. ~Alex
+    XGetWindowAttributes(DISPLAY, WINDOW, &winattr);
+    glViewport(0, 0, winattr.width, winattr.height);
     while(alive) {
+        // NOTE: If we ever decide to add a multiplayer, this will cause slight
+        // timing differences between platforms. Is there a more portable or
+        // accurate way to do this? ~Alex
+        if((clock() - epoch) > (engine.tick * CLOCKS_PER_TICK)) {
+            printf("%lu > %lu", clock() - epoch, engine.tick * CLOCKS_PER_TICK);
+            engine.tick++;
+            msg = BBMSG_TICK;
+            breadbox_publish(&engine, &msg);
+        }
         if(XCheckWindowEvent(DISPLAY, WINDOW, StructureNotifyMask, &event)) {
             switch(event.type) {
                 case DestroyNotify:
                     alive = 0;
                     break;
-                case Expose:
-                    // TODO: Fire BBMSG_VIEW ~Alex
-                    break;
                 default:
                     break;
             }
+        } else {
+            msg = BBMSG_VIEW;
+            breadbox_publish(&engine, &msg);
         }
     }
     glXMakeCurrent(DISPLAY, None, NULL);

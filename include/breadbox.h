@@ -3,6 +3,8 @@
 #ifndef BREADBOX_H
 #define BREADBOX_H
 
+#define BREADBOX_TICKRATE 20
+
 typedef struct {
     // ...
 } breadbox_model_t;
@@ -28,6 +30,7 @@ void breadbox_update(breadbox_model_t *model, breadbox_message_t *msg);
 typedef struct {
     breadbox_model_t model;
     breadbox_subscriptions_t subscriptions;
+    int tick;
 } breadbox_t;
 
 void breadbox_publish(breadbox_t *engine, breadbox_message_t *msg);
