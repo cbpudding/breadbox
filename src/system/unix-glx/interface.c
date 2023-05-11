@@ -7,7 +7,7 @@
 
 #include "breadbox.h"
 
-#define CLOCKS_PER_TICK (CLOCKS_PER_SEC / BREADBOX_TICKRATE)
+#define NSEC_PER_TICK (1000000000 / BREADBOX_TICKRATE)
 
 const GLint GL_ATTR[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
 
@@ -32,11 +32,16 @@ int main(int argc, char *argv[]) {
     int alive = 1;
     GLXContext context;
     breadbox_t engine;
-    clock_t epoch = clock();
+    struct timespec epoch;
     XEvent event;
     breadbox_message_t msg;
+    struct timespec now;
     XVisualInfo *visinfo;
     XWindowAttributes winattr;
+    if(clock_gettime(CLOCK_MONOTONIC, &epoch)) {
+        puts("main: Failed to initialize timer");
+        return 1;
+    }
     // IMPORTANT NOTE: We should have a *proper* initialization function for the
     // engine, however this will do for development/testing. If this makes it
     // into the final release, you have my permission to slap me. ~Alex
@@ -76,15 +81,28 @@ int main(int argc, char *argv[]) {
     XGetWindowAttributes(DISPLAY, WINDOW, &winattr);
     glViewport(0, 0, winattr.width, winattr.height);
     while(alive) {
-        // NOTE: If we ever decide to add a multiplayer, this will cause slight
-        // timing differences between platforms. Is there a more portable or
-        // accurate way to do this? ~Alex
-        if((clock() - epoch) > (engine.tick * CLOCKS_PER_TICK)) {
-            printf("%lu > %lu", clock() - epoch, engine.tick * CLOCKS_PER_TICK);
+        if(clock_gettime(CLOCK_MONOTONIC, &now)) {
+            puts("main: Failed to read the monotonic clock! Things might get weird!");
+        // Breadbox treats BREADBOX_TICKRATE as the number of expected clock
+        // ticks in a second. However, Unix likes to treat the time as a number
+        // of seconds since a certain point. Nanoseconds are this awkward
+        // secondary value we need to pay attention to. The easiest way to
+        // measure time accurately would probably be to convert the time given
+        // by clock_gettime into the number of expected ticks and comparing what
+        // we believe the current tick is to that. Assuming the machine isn't
+        // running too far behind, this also allows it to catch up in case one
+        // tick was particularly taxing on the hardware. ~Alex
+        } else if(((now.tv_sec * BREADBOX_TICKRATE) + (now.tv_nsec / NSEC_PER_TICK)) > engine.tick) {
             engine.tick++;
             msg = BBMSG_TICK;
             breadbox_publish(&engine, &msg);
         }
+        // For those of you wondering, there *is* a reason why I separated the
+        // tick trigger from the other events. I consider BBMSG_TICK to be a
+        // high priority message compared to the others because of how time
+        // sensitive it is. I don't want it to get drowned out by events from X
+        // or anything else. Therefore, to prevent potential issues from
+        // occuring, I gave it its own dedicated if block above this one. ~Alex
         if(XCheckWindowEvent(DISPLAY, WINDOW, StructureNotifyMask, &event)) {
             switch(event.type) {
                 case DestroyNotify:
