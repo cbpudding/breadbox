@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
     // IMPORTANT NOTE: We should have a *proper* initialization function for the
     // engine, however this will do for development/testing. If this makes it
     // into the final release, you have my permission to slap me. ~Alex
-    engine.tick = 0;
+    engine.model.tick = 0;
     DISPLAY = XOpenDisplay(NULL);
     if(!DISPLAY) {
         puts("main: Unable to connect to X server!");
@@ -92,10 +92,21 @@ int main(int argc, char *argv[]) {
         // we believe the current tick is to that. Assuming the machine isn't
         // running too far behind, this also allows it to catch up in case one
         // tick was particularly taxing on the hardware. ~Alex
-        } else if(((now.tv_sec * BREADBOX_TICKRATE) + (now.tv_nsec / NSEC_PER_TICK)) > engine.tick) {
-            engine.tick++;
-            msg = BBMSG_TICK;
-            breadbox_publish(&engine, &msg);
+        } else if(((now.tv_sec * BREADBOX_TICKRATE) + (now.tv_nsec / NSEC_PER_TICK)) > engine.model.tick) {
+            if(!++engine.model.tick) {
+                // If anybody is crazy enough to run the engine for this long,
+                // let me know about it. They're my kind of crazy. ~Alex
+                puts(
+                    "main: Did you seriously run this game for almost 7 years"
+                    "straight? You have my respect. This message will now"
+                    "self-destruct. ~Alex"
+                );
+                alive = 0;
+                break;
+            } else {
+                msg = BBMSG_TICK;
+                breadbox_publish(&engine, &msg);
+            }
         }
         // For those of you wondering, there *is* a reason why I separated the
         // tick trigger from the other events. I consider BBMSG_TICK to be a
