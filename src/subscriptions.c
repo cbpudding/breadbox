@@ -4,11 +4,14 @@
 
 void breadbox_publish(breadbox_t *engine, breadbox_message_t *msg) {
     switch(*msg) {
-        case BBMSG_VIEW:
-            breadbox_view(&engine->model);
-            break;
         default:
-            breadbox_update(&engine->model, msg);
+            breadbox_update(engine, msg);
             break;
+    }
+}
+
+void breadbox_subscription_init(breadbox_subscriptions_t *subs) {
+    for(int i = 0; i < 128; i++) {
+        subs->axes[i] = 0.0;
     }
 }

@@ -7,7 +7,7 @@
 extern Display *DISPLAY;
 extern Window WINDOW;
 
-void breadbox_view(breadbox_model_t *model) {
+void view(breadbox_model_t *model) {
     float angle;
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // Test triangle to be replaced by actual rendering code later. ~Alex

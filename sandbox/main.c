@@ -1,9 +1,9 @@
-#include <stdio.h>
-
 #include "breadbox.h"
 
-void breadbox_update(breadbox_model_t *model, breadbox_message_t *msg) {
-    if(*msg == BBMSG_TICK) {
-        printf("Tick %u\r\n", model->tick);
-    }
+void breadbox_init(breadbox_t *engine) {
+    // ...
+}
+
+void breadbox_update(breadbox_t *engine, breadbox_message_t *msg) {
+    // ...
 }

@@ -9,6 +9,8 @@
 
 #define NSEC_PER_TICK (1000000000 / BREADBOX_TICKRATE)
 
+extern void view(breadbox_model_t *model);
+
 const GLint GL_ATTR[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
 
 // Because who doesn't like global variables? *cries in ANSI C* ~Alex
@@ -42,10 +44,9 @@ int main(int argc, char *argv[]) {
         puts("main: Failed to initialize timer");
         return 1;
     }
-    // IMPORTANT NOTE: We should have a *proper* initialization function for the
-    // engine, however this will do for development/testing. If this makes it
-    // into the final release, you have my permission to slap me. ~Alex
-    engine.model.tick = 0;
+    breadbox_model_init(&engine.model);
+    breadbox_subscription_init(&engine.subscriptions);
+    breadbox_init(&engine);
     DISPLAY = XOpenDisplay(NULL);
     if(!DISPLAY) {
         puts("main: Unable to connect to X server!");
@@ -116,6 +117,9 @@ int main(int argc, char *argv[]) {
         // occuring, I gave it its own dedicated if block above this one. ~Alex
         if(XCheckWindowEvent(DISPLAY, WINDOW, StructureNotifyMask, &event)) {
             switch(event.type) {
+                case ConfigureNotify:
+                    glViewport(0, 0, event.xconfigure.width, event.xconfigure.height);
+                    break;
                 case DestroyNotify:
                     alive = 0;
                     break;
@@ -123,12 +127,12 @@ int main(int argc, char *argv[]) {
                     break;
             }
         } else {
-            msg = BBMSG_VIEW;
-            breadbox_publish(&engine, &msg);
+            view(&engine.model);
         }
     }
     glXMakeCurrent(DISPLAY, None, NULL);
     glXDestroyContext(DISPLAY, context);
+    // TODO: What if the window hasn't been destroyed yet? ~Alex
     XCloseDisplay(DISPLAY);
     return 0;
 }
