@@ -14,7 +14,7 @@ void view(breadbox_model_t *model) {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     // bananas ROTAT E ~Alex
-    angle = (float)(model->tick % (BREADBOX_TICKRATE * 4)) / ((float)BREADBOX_TICKRATE * 4);
+    angle = (float)(model->tick % BREADBOX_TICKRATE) / (float)BREADBOX_TICKRATE;
     glRotatef(angle * 360.0, 0.0, 1.0, 0.0);
     glBegin(GL_TRIANGLES);
     glColor3f(1.0, 0.0, 0.0);
