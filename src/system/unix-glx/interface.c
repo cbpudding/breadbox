@@ -160,10 +160,12 @@ int main(int argc, char *argv[]) {
                     alive = 0;
                     break;
                 case KeyPress:
-                    printf("KEY: +%u\n", event.xkey.keycode);
-                    break;
                 case KeyRelease:
-                    printf("KEY: -%u\n", event.xkey.keycode);
+                    if(event.xkey.type == KeyPress) {
+                        printf("KEY: +%u\n", event.xkey.keycode);
+                    } else {
+                        printf("KEY: -%u\n", event.xkey.keycode);
+                    }
                     break;
                 default:
                     break;

@@ -11,8 +11,6 @@ typedef enum {
 } breadbox_message_t;
 
 typedef struct {
-    // Game-specific data
-    void *game;
     // Current game tick
     int tick;
 } breadbox_model_t;
