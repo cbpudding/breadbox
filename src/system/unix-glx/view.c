@@ -1,3 +1,6 @@
+#include <math.h>
+#include <stdio.h>
+
 #include "breadbox.h"
 
 #include <GL/gl.h>
@@ -7,6 +10,8 @@
 extern Display *DISPLAY;
 extern Window WINDOW;
 
+extern float get_subtick();
+
 void view(breadbox_model_t *model) {
     float angle;
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -14,7 +19,7 @@ void view(breadbox_model_t *model) {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     // bananas ROTAT E ~Alex
-    angle = (float)(model->tick % BREADBOX_TICKRATE) / (float)BREADBOX_TICKRATE;
+    angle = fmodf(get_subtick(), (float)BREADBOX_TICKRATE) / (float)BREADBOX_TICKRATE;
     glRotatef(angle * 360.0, 0.0, 1.0, 0.0);
     glBegin(GL_TRIANGLES);
     glColor3f(1.0, 0.0, 0.0);

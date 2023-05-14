@@ -16,6 +16,7 @@ const GLint GL_ATTR[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None }
 
 // Because who doesn't like global variables? *cries in ANSI C* ~Alex
 Display *DISPLAY;
+struct timespec EPOCH;
 Window WINDOW;
 
 int create_window(XVisualInfo *visinfo) {
@@ -31,11 +32,28 @@ int create_window(XVisualInfo *visinfo) {
     return 0;
 }
 
+float get_subtick() {
+    float current = 0.0;
+    struct timespec now;
+    if(clock_gettime(CLOCK_MONOTONIC, &now)) {
+        puts("breadbox_get_subtick: Failed to read monotonic clock!");
+    } else {
+        now.tv_sec -= EPOCH.tv_sec;
+        if(EPOCH.tv_nsec > now.tv_nsec) {
+            now.tv_nsec = 1000000000 + (now.tv_nsec - EPOCH.tv_nsec);
+            now.tv_sec--;
+        } else {
+            now.tv_nsec -= EPOCH.tv_nsec;
+        }
+        current = (float)(now.tv_sec * BREADBOX_TICKRATE) + ((float)now.tv_nsec / (float)NSEC_PER_TICK);
+    }
+    return current;
+}
+
 int main(int argc, char *argv[]) {
     int alive = 1;
     GLXContext context;
     breadbox_t engine;
-    struct timespec epoch;
     XEvent event;
     int expected_tick;
     breadbox_message_t msg;
@@ -85,7 +103,7 @@ int main(int argc, char *argv[]) {
     // We're putting epoch initialization here to make the difference between
     // the epoch and the first timestamp as little as possible so it doesn't
     // complaining about missing ticks when the engine first starts. ~Alex
-    if(clock_gettime(CLOCK_MONOTONIC, &epoch)) {
+    if(clock_gettime(CLOCK_MONOTONIC, &EPOCH)) {
         puts("main: Failed to initialize timer");
         glXMakeCurrent(DISPLAY, None, NULL);
         glXDestroyContext(DISPLAY, context);
@@ -108,12 +126,12 @@ int main(int argc, char *argv[]) {
         } else {
             // We'll need to adjust the struct timespec to reflect time since
             // the epoch and not time since the system started. ~Alex
-            now.tv_sec -= epoch.tv_sec;
-            if(epoch.tv_nsec > now.tv_nsec) {
-                now.tv_nsec = 1000000000 + (now.tv_nsec - epoch.tv_nsec);
+            now.tv_sec -= EPOCH.tv_sec;
+            if(EPOCH.tv_nsec > now.tv_nsec) {
+                now.tv_nsec = 1000000000 + (now.tv_nsec - EPOCH.tv_nsec);
                 now.tv_sec--;
             } else {
-                now.tv_nsec -= epoch.tv_nsec;
+                now.tv_nsec -= EPOCH.tv_nsec;
             }
             expected_tick = (now.tv_sec * BREADBOX_TICKRATE) + (now.tv_nsec / NSEC_PER_TICK);
             if(expected_tick > engine.model.tick) {
