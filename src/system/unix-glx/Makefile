@@ -1,12 +1,14 @@
 CFLAGS=-I../../../include
 
+BACKEND=unix-glx
+
 SRCDIR=../..
-OUTDIR=../../../build/unix-glx
+OUTDIR=../../../build/$(BACKEND)
 
 $(OUTDIR)/libbreadbox.a: $(OUTDIR)/model.o $(OUTDIR)/subscriptions.o $(OUTDIR)/system/interface.o $(OUTDIR)/system/view.o
 	$(AR) rcs $@ $^
 
-$(OUTDIR)/system/%.o: $(SRCDIR)/system/unix-glx/%.c
+$(OUTDIR)/system/%.o: $(SRCDIR)/system/$(BACKEND)/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(OUTDIR)/%.o: $(SRCDIR)/%.c $(OUTDIR)
