@@ -99,6 +99,8 @@ int main(int argc, char *argv[]) {
     glViewport(0, 0, winattr.width, winattr.height);
     // We don't want to deal with event spam from X so we'll tell it that we're
     // only looking for input changes and we don't want auto-repeating keys. ~Alex
+    // TODO: Is there a better way of doing this? This disables auto-repeat for
+    // EVERY window on the display. ~Alex
     XAutoRepeatOff(DISPLAY);
     // We're putting epoch initialization here to make the difference between
     // the epoch and the first timestamp as little as possible so it doesn't
@@ -152,7 +154,7 @@ int main(int argc, char *argv[]) {
                             expected_tick - engine.model.tick
                         );
                     }
-                    msg = BBMSG_TICK;
+                    msg.type = BBMSG_TICK;
                     breadbox_publish(&engine, &msg);
                 }
             }
@@ -178,12 +180,10 @@ int main(int argc, char *argv[]) {
                     alive = 0;
                     break;
                 case KeyPress:
+                    printf("KEY: +%u\n", event.xkey.keycode);
+                    break;
                 case KeyRelease:
-                    if(event.xkey.type == KeyPress) {
-                        printf("KEY: +%u\n", event.xkey.keycode);
-                    } else {
-                        printf("KEY: -%u\n", event.xkey.keycode);
-                    }
+                    printf("KEY: -%u\n", event.xkey.keycode);
                     break;
                 default:
                     break;
@@ -192,6 +192,8 @@ int main(int argc, char *argv[]) {
             view(&engine.model);
         }
     }
+    // Reverting the XAutoRepeatOff we ran earlier. ~Alex
+    XAutoRepeatOn(DISPLAY);
     glXMakeCurrent(DISPLAY, None, NULL);
     glXDestroyContext(DISPLAY, context);
     // TODO: What if the window hasn't been destroyed yet? ~Alex

@@ -1,11 +1,11 @@
-#include <stdio.h>
-
 #include "breadbox.h"
 
 void breadbox_publish(breadbox_t *engine, breadbox_message_t *msg) {
-    switch(*msg) {
-        default:
+    switch(msg->type) {
+        case BBMSG_TICK:
             breadbox_update(engine, msg);
+            break;
+        default:
             break;
     }
 }

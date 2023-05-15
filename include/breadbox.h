@@ -8,6 +8,16 @@
 typedef enum {
     // Tell the engine that a tick has passed
     BBMSG_TICK
+} breadbox_message_type_t;
+
+typedef struct {
+    // The type of message being sent
+    breadbox_message_type_t type;
+    // Details about the message
+    union {
+        // TODO: Define actual message variants
+        int placeholder;
+    } data;
 } breadbox_message_t;
 
 typedef struct {
