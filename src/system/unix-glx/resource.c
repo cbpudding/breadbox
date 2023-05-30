@@ -1,4 +1,6 @@
 #include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "breadbox.h"
 
@@ -73,12 +75,47 @@ const uint32_t CRC32C_TABLE[256] = {
 };
 
 int breadbox_resource_load(breadbox_resource_t *res, const char *id) {
-    // ...
-    return 0;
+    FILE *bbr;
+    void *data;
+    breadbox_resource_header_t header;
+    size_t length;
+    // I'm using the filesystem to load resources for now. Just keep in mind
+    // that this won't be the case in the final version of the engine! ~Alex
+    if(bbr = fopen(id, "r")) {
+        fseek(bbr, 0, SEEK_END);
+        if((length = ftell(bbr)) > sizeof(breadbox_resource_header_t)) {
+            fseek(bbr, 0, SEEK_SET);
+            if(fread(&header, sizeof(breadbox_resource_header_t), 1, bbr)) {
+                // *Insert whole rant about endianness here*
+                // See resources.h for details. ~Alex
+                if(!strncmp(&header.signature, "BBR\0", 4)) {
+                    if(header.platform == BBPLAT_NEUTRAL || header.platform == BBPLAT_UNIX_GLX) {
+                        if(data = malloc(header.size)) {
+                            if(fread(data, 1, header.size, bbr)) {
+                                res->data = data;
+                                res->hash = header.hash;
+                                res->size = header.size;
+                                res->type = header.type;
+                                if(!breadbox_resource_verify(res)) {
+                                    fclose(bbr);
+                                    return 0;
+                                }
+                                res->data = NULL;
+                            }
+                            free(data);
+                        }
+                    }
+                }
+            }
+        }
+        fclose(bbr);
+    }
+    return 1;
 }
 
 void breadbox_resource_unload(breadbox_resource_t *res) {
-    // ...
+    free(res->data);
+    res->data = NULL;
 }
 
 int breadbox_resource_verify(breadbox_resource_t *res) {
