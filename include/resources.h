@@ -1,3 +1,5 @@
+#include <stdint.h>
+
 #ifndef RESOURCES_H
 #define RESOURCES_H
 
@@ -18,9 +20,9 @@ typedef struct {
     // Type of resource
     breadbox_resource_type_t type;
     // Size of the resource in bytes
-    int size;
+    uint32_t size;
     // CRC32C hash to verify resource integrity
-    int hash;
+    uint32_t hash;
     // Pointer to the resource data
     void *data;
 } breadbox_resource_t;
@@ -36,9 +38,9 @@ typedef struct {
     // Type of resource
     breadbox_resource_type_t type;
     // Size of the resource of bytes
-    int size;
+    uint32_t size;
     // CRC32C hash to verify resource integrity
-    int hash;
+    uint32_t hash;
 } breadbox_resource_header_t;
 
 #endif
