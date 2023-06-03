@@ -119,7 +119,7 @@ void breadbox_resource_unload(breadbox_resource_t *res) {
 }
 
 int breadbox_resource_verify(breadbox_resource_t *res) {
-    int check = 0xFFFFFFFF;
+    uint32_t check = 0xFFFFFFFF;
     for(int i = 0; i < res->size; i++) {
         check = CRC32C_TABLE[(char)check ^ ((char *)res->data)[i]] ^ (check >> 8);
     }
