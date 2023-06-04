@@ -1,4 +1,6 @@
+#include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 
 #include <GL/gl.h>
@@ -15,6 +17,7 @@ extern void view(breadbox_model_t *model);
 const GLint GL_ATTR[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
 
 // Because who doesn't like global variables? *cries in ANSI C* ~Alex
+GLXContext CONTEXT;
 Display *DISPLAY;
 struct timespec EPOCH;
 Window WINDOW;
@@ -36,7 +39,7 @@ float get_subtick() {
     float current = 0.0;
     struct timespec now;
     if(clock_gettime(CLOCK_MONOTONIC, &now)) {
-        puts("breadbox_get_subtick: Failed to read monotonic clock!");
+        puts("get_subtick: Failed to read monotonic clock!");
     } else {
         now.tv_sec -= EPOCH.tv_sec;
         if(EPOCH.tv_nsec > now.tv_nsec) {
@@ -50,9 +53,20 @@ float get_subtick() {
     return current;
 }
 
+void interrupt(int sig) {
+    // Just in case the engine locks up on my laptop again, this will at least
+    // let me type normally... ~Alex
+    puts("interrupt: SIGINT detected! Terminating program gracefully.");
+    XAutoRepeatOn(DISPLAY);
+    glXMakeCurrent(DISPLAY, None, NULL);
+    glXDestroyContext(DISPLAY, CONTEXT);
+    XDestroyWindow(DISPLAY, WINDOW);
+    XCloseDisplay(DISPLAY);
+    exit(1);
+}
+
 int main(int argc, char *argv[]) {
     int alive = 1;
-    GLXContext context;
     breadbox_t engine;
     XEvent event;
     int expected_tick;
@@ -60,6 +74,9 @@ int main(int argc, char *argv[]) {
     struct timespec now;
     XVisualInfo *visinfo;
     XWindowAttributes winattr;
+    // Before we do ANYTHING, we'll put a failsafe in so we can handle
+    // interrupts at the very least. ~Alex
+    signal(SIGINT, interrupt);
     breadbox_model_init(&engine.model);
     breadbox_subscription_init(&engine.subscriptions);
     breadbox_init(&engine);
@@ -81,8 +98,8 @@ int main(int argc, char *argv[]) {
     }
     XMapWindow(DISPLAY, WINDOW);
     XStoreName(DISPLAY, WINDOW, "Breadbox");
-    context = glXCreateContext(DISPLAY, visinfo, NULL, GL_TRUE);
-    if(!context) {
+    CONTEXT = glXCreateContext(DISPLAY, visinfo, NULL, GL_TRUE);
+    if(!CONTEXT) {
         puts("main: Failed to create GL context!");
         XDestroyWindow(DISPLAY, WINDOW);
         XCloseDisplay(DISPLAY);
@@ -91,7 +108,7 @@ int main(int argc, char *argv[]) {
     // XSelectInput needs to happen after glXCreateContext because OpenGL fails
     // to load otherwise. ~Alex
     XSelectInput(DISPLAY, WINDOW, EVENT_MASK);
-    glXMakeCurrent(DISPLAY, WINDOW, context);
+    glXMakeCurrent(DISPLAY, WINDOW, CONTEXT);
     glEnable(GL_DEPTH_TEST);
     // NOTE: If the window ever gets resized, then we'll need to run these two
     // again. ~Alex
@@ -108,7 +125,7 @@ int main(int argc, char *argv[]) {
     if(clock_gettime(CLOCK_MONOTONIC, &EPOCH)) {
         puts("main: Failed to initialize timer");
         glXMakeCurrent(DISPLAY, None, NULL);
-        glXDestroyContext(DISPLAY, context);
+        glXDestroyContext(DISPLAY, CONTEXT);
         XDestroyWindow(DISPLAY, WINDOW);
         XCloseDisplay(DISPLAY);
         return 1;
@@ -195,7 +212,7 @@ int main(int argc, char *argv[]) {
     // Reverting the XAutoRepeatOff we ran earlier. ~Alex
     XAutoRepeatOn(DISPLAY);
     glXMakeCurrent(DISPLAY, None, NULL);
-    glXDestroyContext(DISPLAY, context);
+    glXDestroyContext(DISPLAY, CONTEXT);
     // TODO: What if the window hasn't been destroyed yet? ~Alex
     XCloseDisplay(DISPLAY);
     return 0;
