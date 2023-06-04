@@ -28,11 +28,10 @@ typedef struct {
 } breadbox_resource_t;
 
 typedef struct {
-    // File signature. Should always be "BBR\0". Maybe we could use this value
-    // to detect endianness or maybe even a version number sometime in the
-    // future? If "BBR\0" is 0x42425200 on little endian architectures, then we
-    // will read it as 0x00524242 if the file's endianness isn't correct! ~Alex
-    char signature[4];
+    // File signature. Should always be "BBR\0". If the bytes are backwards then
+    // the file was created for the wrong architecture and no attempts should be
+    // made to read the file any further. ~Alex
+    uint32_t signature;
     // Supported platform
     breadbox_resource_platform_t platform;
     // Type of resource

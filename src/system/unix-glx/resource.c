@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include <stdio.h>
-#include <string.h>
+#include <stdlib.h>
 
 #include "breadbox.h"
 
@@ -88,7 +88,7 @@ int breadbox_resource_load(breadbox_resource_t *res, const char *id) {
             if(fread(&header, sizeof(breadbox_resource_header_t), 1, bbr)) {
                 // *Insert whole rant about endianness here*
                 // See resources.h for details. ~Alex
-                if(!strncmp(&header.signature, "BBR\0", 4)) {
+                if(header.signature == 0x00524242) {
                     if(header.platform == BBPLAT_NEUTRAL || header.platform == BBPLAT_UNIX_GLX) {
                         if(data = malloc(header.size)) {
                             if(fread(data, 1, header.size, bbr)) {
@@ -124,5 +124,6 @@ int breadbox_resource_verify(breadbox_resource_t *res) {
         check = CRC32C_TABLE[(char)check ^ ((char *)res->data)[i]] ^ (check >> 8);
     }
     check ^= 0xFFFFFFFF;
+    printf("check = %x\n", check);
     return res->hash != check;
 }

@@ -75,10 +75,7 @@ int main(int argc, char *argv[]) {
     FILE *input;
     FILE *output;
     int temp;
-    header.signature[0] = 'B';
-    header.signature[1] = 'B';
-    header.signature[2] = 'R';
-    header.signature[3] = 0;
+    header.signature = 0x00524242;
     if(argc > 4) {
         // TODO: Eventually make the format/platform arguments work
         header.platform = BBPLAT_NEUTRAL;

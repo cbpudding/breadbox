@@ -1,3 +1,5 @@
+CFLAGS=-I../include
+
 .PHONY: all
 
 all: ../build/tools/bbconv ../build/tools/bbpack
@@ -6,4 +8,4 @@ all: ../build/tools/bbconv ../build/tools/bbpack
 	mkdir -p $@
 
 ../build/tools/%: %.c ../build/tools
-	$(CC) -o $@ $<
+	$(CC) $(CFLAGS) -o $@ $<
