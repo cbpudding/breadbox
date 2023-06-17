@@ -6,8 +6,5 @@ unix-glx:
 docs:
 	$(MAKE) -C docs
 
-tools:
-	$(MAKE) -C tools
-
 clean:
 	$(RM) -r build/

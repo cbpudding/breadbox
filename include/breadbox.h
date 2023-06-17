@@ -1,5 +1,3 @@
-#include "resources.h"
-
 #ifndef BREADBOX_H
 #define BREADBOX_H
 
@@ -43,15 +41,6 @@ void breadbox_model_init(breadbox_model_t *model);
 
 // This is the main way the engine is notified of events by the system. ~Alex
 void breadbox_publish(breadbox_t *engine, breadbox_message_t *msg);
-
-// Loads a resource and returns zero upon success
-int breadbox_resource_load(breadbox_resource_t *res, const char *id);
-
-// Unloads a resource from the system
-void breadbox_resource_unload(breadbox_resource_t *res);
-
-// Verifies the integrity of the resource and returns zero upon success
-int breadbox_resource_verify(breadbox_resource_t *res);
 
 // Initializes engine subscriptions
 void breadbox_subscription_init(breadbox_subscriptions_t *subs);
