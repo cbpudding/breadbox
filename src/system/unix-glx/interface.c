@@ -1,3 +1,4 @@
+#include <setjmp.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,10 +28,18 @@ const char *ATOM_NAMES[] = {
 const GLint GL_ATTR[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
 
 // Because who doesn't like global variables? *cries in ANSI C* ~Alex
+int ALIVE;
 GLXContext CONTEXT;
 Display *DISPLAY;
 struct timespec EPOCH;
+jmp_buf PORTAL;
 Window WINDOW;
+
+void breadbox_quit(breadbox_t *engine) {
+    // Simple enough on this platform(for now) ~Alex
+    ALIVE = 0;
+    longjmp(PORTAL, 0);
+}
 
 int create_window(XVisualInfo *visinfo) {
     Colormap colormap;
@@ -77,7 +86,6 @@ void interrupt(int sig) {
 
 int main(int argc, char *argv[]) {
     Atom *atoms;
-    int alive = 1;
     breadbox_t engine;
     XEvent event;
     int expected_tick;
@@ -85,6 +93,7 @@ int main(int argc, char *argv[]) {
     struct timespec now;
     XVisualInfo *visinfo;
     XWindowAttributes winattr;
+    ALIVE = 1;
     // Before we do ANYTHING, we'll put a failsafe in so we can handle
     // interrupts at the very least. ~Alex
     signal(SIGINT, interrupt);
@@ -163,7 +172,11 @@ int main(int argc, char *argv[]) {
         XCloseDisplay(DISPLAY);
         return 1;
     }
-    while(alive) {
+    // Before we jump into the main loop, let's save the current state of the
+    // application so we can come back in case things get crazy. ~Alex
+    // "Now you're thinking with portals!" -- Valve probably
+    setjmp(PORTAL);
+    while(ALIVE) {
         if(clock_gettime(CLOCK_MONOTONIC, &now)) {
             puts("main: Failed to read the monotonic clock! Things might get weird!");
         // Breadbox treats BREADBOX_TICKRATE as the number of expected clock
@@ -195,7 +208,7 @@ int main(int argc, char *argv[]) {
                         "straight? You have my respect. This message will now"
                         "self-destruct. ~Alex"
                     );
-                    alive = 0;
+                    ALIVE = 0;
                     break;
                 } else {
                     if(expected_tick > engine.model.tick) {
@@ -232,7 +245,7 @@ int main(int argc, char *argv[]) {
                         // TODO: Maybe we'll need to handle other similar requests in the future?
                         if(event.xclient.data.l[0] == atoms[WM_DELETE_WINDOW]) {
                             // As you wish! ~Alex
-                            alive = 0;
+                            ALIVE = 0;
                             XDestroyWindow(DISPLAY, WINDOW);
                         }
                     }
@@ -241,7 +254,7 @@ int main(int argc, char *argv[]) {
                     glViewport(0, 0, event.xconfigure.width, event.xconfigure.height);
                     break;
                 case DestroyNotify:
-                    alive = 0;
+                    ALIVE = 0;
                     break;
                 case KeyPress:
                     printf("KEY: +%u\n", event.xkey.keycode);
