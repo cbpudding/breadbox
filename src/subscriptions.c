@@ -11,7 +11,7 @@ void breadbox_publish(breadbox_t *engine, breadbox_message_t *msg) {
 }
 
 void breadbox_subscription_init(breadbox_subscriptions_t *subs) {
-    for(int i = 0; i < 128; i++) {
+    for(int i = 0; i < 32; i++) {
         subs->axes[i] = 0.0;
     }
 }
