@@ -14,6 +14,16 @@
 
 extern void view(breadbox_model_t *model);
 
+enum ATOM_INDICES {
+    WM_DELETE_WINDOW = 0,
+    WM_PROTOCOLS
+};
+
+const char *ATOM_NAMES[] = {
+    "WM_DELETE_WINDOW",
+    "WM_PROTOCOLS"
+};
+
 const GLint GL_ATTR[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
 
 // Because who doesn't like global variables? *cries in ANSI C* ~Alex
@@ -66,6 +76,7 @@ void interrupt(int sig) {
 }
 
 int main(int argc, char *argv[]) {
+    Atom *atoms;
     int alive = 1;
     breadbox_t engine;
     XEvent event;
@@ -85,14 +96,34 @@ int main(int argc, char *argv[]) {
         puts("main: Unable to connect to X server!");
         return 1;
     }
+    // Locate some atoms for ICCCM since some window managers aren't very
+    // straightforward when it comes to closing windows. ~Alex
+    atoms = malloc(sizeof(Atom) * 2);
+    if(!atoms) {
+        puts("main: Unable to allocate space for atoms!");
+        XCloseDisplay(DISPLAY);
+        return 1;
+    }
+    // We cast here because the compiler warns about a constant value becoming a
+    // regular value. I do not believe Xlib modifies the value given, so it
+    // should be safe to do in this case. If I'm wrong, open an issue and I'll
+    // fix this. ~Alex
+    if(!XInternAtoms(DISPLAY, (char **)ATOM_NAMES, 2, True, atoms)) {
+        puts("main: Unable to locate atoms!");
+        free(atoms);
+        XCloseDisplay(DISPLAY);
+        return 1;
+    }
     visinfo = glXChooseVisual(DISPLAY, 0, (int *)GL_ATTR);
     if(!visinfo) {
         puts("main: No compatible visual found!");
+        free(atoms);
         XCloseDisplay(DISPLAY);
         return 1;
     }
     if(create_window(visinfo)) {
         puts("main: Unable to create WINDOW!");
+        free(atoms);
         XCloseDisplay(DISPLAY);
         return 1;
     }
@@ -102,6 +133,7 @@ int main(int argc, char *argv[]) {
     if(!CONTEXT) {
         puts("main: Failed to create GL context!");
         XDestroyWindow(DISPLAY, WINDOW);
+        free(atoms);
         XCloseDisplay(DISPLAY);
         return 1;
     }
@@ -127,6 +159,7 @@ int main(int argc, char *argv[]) {
         glXMakeCurrent(DISPLAY, None, NULL);
         glXDestroyContext(DISPLAY, CONTEXT);
         XDestroyWindow(DISPLAY, WINDOW);
+        free(atoms);
         XCloseDisplay(DISPLAY);
         return 1;
     }
@@ -190,6 +223,20 @@ int main(int argc, char *argv[]) {
                 case ButtonRelease:
                     printf("BUTTON: -%u\n", event.xbutton.button);
                     break;
+                // Some window managers aren't nice and decide to simply unmap
+                // windows rather than destroy them. In those cases, we'll
+                // receive a client message that will tell us that the window
+                // has been closed. ~Alex
+                case ClientMessage:
+                    if(event.xclient.message_type == atoms[WM_PROTOCOLS]) {
+                        // TODO: Maybe we'll need to handle other similar requests in the future?
+                        if(event.xclient.data.l[0] == atoms[WM_DELETE_WINDOW]) {
+                            // As you wish! ~Alex
+                            alive = 0;
+                            XDestroyWindow(DISPLAY, WINDOW);
+                        }
+                    }
+                    break;
                 case ConfigureNotify:
                     glViewport(0, 0, event.xconfigure.width, event.xconfigure.height);
                     break;
@@ -214,6 +261,7 @@ int main(int argc, char *argv[]) {
     glXMakeCurrent(DISPLAY, None, NULL);
     glXDestroyContext(DISPLAY, CONTEXT);
     // TODO: What if the window hasn't been destroyed yet? ~Alex
+    free(atoms);
     XCloseDisplay(DISPLAY);
     return 0;
 }
