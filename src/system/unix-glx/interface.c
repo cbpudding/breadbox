@@ -29,6 +29,7 @@ const GLint GL_ATTR[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None }
 
 // Because who doesn't like global variables? *cries in ANSI C* ~Alex
 int ALIVE;
+Atom *ATOMS;
 GLXContext CONTEXT;
 Display *DISPLAY;
 struct timespec EPOCH;
@@ -36,9 +37,14 @@ jmp_buf PORTAL;
 Window WINDOW;
 
 void breadbox_quit(breadbox_t *engine) {
-    // Simple enough on this platform(for now) ~Alex
-    ALIVE = 0;
-    longjmp(PORTAL, 0);
+    // Reverting the XAutoRepeatOff we ran earlier. ~Alex
+    XAutoRepeatOn(DISPLAY);
+    glXMakeCurrent(DISPLAY, None, NULL);
+    glXDestroyContext(DISPLAY, CONTEXT);
+    // TODO: What if the window hasn't been destroyed yet? ~Alex
+    free(ATOMS);
+    XCloseDisplay(DISPLAY);
+    exit(ALIVE);
 }
 
 int create_window(XVisualInfo *visinfo) {
@@ -85,7 +91,6 @@ void interrupt(int sig) {
 }
 
 int main(int argc, char *argv[]) {
-    Atom *atoms;
     breadbox_t engine;
     XEvent event;
     int expected_tick;
@@ -107,8 +112,8 @@ int main(int argc, char *argv[]) {
     }
     // Locate some atoms for ICCCM since some window managers aren't very
     // straightforward when it comes to closing windows. ~Alex
-    atoms = malloc(sizeof(Atom) * 2);
-    if(!atoms) {
+    ATOMS = malloc(sizeof(Atom) * 2);
+    if(!ATOMS) {
         puts("main: Unable to allocate space for atoms!");
         XCloseDisplay(DISPLAY);
         return 1;
@@ -117,22 +122,22 @@ int main(int argc, char *argv[]) {
     // regular value. I do not believe Xlib modifies the value given, so it
     // should be safe to do in this case. If I'm wrong, open an issue and I'll
     // fix this. ~Alex
-    if(!XInternAtoms(DISPLAY, (char **)ATOM_NAMES, 2, True, atoms)) {
+    if(!XInternAtoms(DISPLAY, (char **)ATOM_NAMES, 2, True, ATOMS)) {
         puts("main: Unable to locate atoms!");
-        free(atoms);
+        free(ATOMS);
         XCloseDisplay(DISPLAY);
         return 1;
     }
     visinfo = glXChooseVisual(DISPLAY, 0, (int *)GL_ATTR);
     if(!visinfo) {
         puts("main: No compatible visual found!");
-        free(atoms);
+        free(ATOMS);
         XCloseDisplay(DISPLAY);
         return 1;
     }
     if(create_window(visinfo)) {
         puts("main: Unable to create WINDOW!");
-        free(atoms);
+        free(ATOMS);
         XCloseDisplay(DISPLAY);
         return 1;
     }
@@ -142,7 +147,7 @@ int main(int argc, char *argv[]) {
     if(!CONTEXT) {
         puts("main: Failed to create GL context!");
         XDestroyWindow(DISPLAY, WINDOW);
-        free(atoms);
+        free(ATOMS);
         XCloseDisplay(DISPLAY);
         return 1;
     }
@@ -165,12 +170,7 @@ int main(int argc, char *argv[]) {
     // complaining about missing ticks when the engine first starts. ~Alex
     if(clock_gettime(CLOCK_MONOTONIC, &EPOCH)) {
         puts("main: Failed to initialize timer");
-        glXMakeCurrent(DISPLAY, None, NULL);
-        glXDestroyContext(DISPLAY, CONTEXT);
-        XDestroyWindow(DISPLAY, WINDOW);
-        free(atoms);
-        XCloseDisplay(DISPLAY);
-        return 1;
+        breadbox_quit(&engine);
     }
     // Before we jump into the main loop, let's save the current state of the
     // application so we can come back in case things get crazy. ~Alex
@@ -241,9 +241,9 @@ int main(int argc, char *argv[]) {
                 // receive a client message that will tell us that the window
                 // has been closed. ~Alex
                 case ClientMessage:
-                    if(event.xclient.message_type == atoms[WM_PROTOCOLS]) {
+                    if(event.xclient.message_type == ATOMS[WM_PROTOCOLS]) {
                         // TODO: Maybe we'll need to handle other similar requests in the future?
-                        if(event.xclient.data.l[0] == atoms[WM_DELETE_WINDOW]) {
+                        if(event.xclient.data.l[0] == ATOMS[WM_DELETE_WINDOW]) {
                             // As you wish! ~Alex
                             ALIVE = 0;
                             XDestroyWindow(DISPLAY, WINDOW);
@@ -269,12 +269,6 @@ int main(int argc, char *argv[]) {
             view(&engine.model);
         }
     }
-    // Reverting the XAutoRepeatOff we ran earlier. ~Alex
-    XAutoRepeatOn(DISPLAY);
-    glXMakeCurrent(DISPLAY, None, NULL);
-    glXDestroyContext(DISPLAY, CONTEXT);
-    // TODO: What if the window hasn't been destroyed yet? ~Alex
-    free(atoms);
-    XCloseDisplay(DISPLAY);
+    breadbox_quit(&engine);
     return 0;
 }
