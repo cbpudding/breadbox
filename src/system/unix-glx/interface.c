@@ -55,11 +55,12 @@ Display *DISPLAY;
 struct timespec EPOCH;
 Window WINDOW;
 
+// Predefinition for get_subtick here because breadbox_log relies on it. ~Alex
 float get_subtick();
 
 void breadbox_log(breadbox_log_source_t source, breadbox_log_level_t level, const char *format, va_list args) {
     float current = get_subtick();
-    printf("%s%9.3f %s %s ", LOG_COLOR[level], current, LOG_SOURCE[source], LOG_LEVEL[level]);
+    printf("%s%13.3f %s %s ", LOG_COLOR[level], current, LOG_SOURCE[source], LOG_LEVEL[level]);
     vprintf(format, args);
     printf("\n");
 }
@@ -134,7 +135,7 @@ int main(int argc, char *argv[]) {
     // messed up. ~Alex
     if(clock_gettime(CLOCK_MONOTONIC, &EPOCH)) {
         breadbox_error_internal(BBLOG_SYSTEM, "main: Failed to initialize timer");
-        breadbox_quit(&engine);
+        return 1;
     }
     breadbox_model_init(&engine.model);
     breadbox_subscription_init(&engine.subscriptions);
