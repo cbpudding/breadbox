@@ -1,5 +1,5 @@
-#include <setjmp.h>
 #include <signal.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -10,7 +10,7 @@
 
 #include "breadbox.h"
 
-#define EVENT_MASK ButtonPressMask | ButtonReleaseMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask
+#define EVENT_MASK (ButtonPressMask | ButtonReleaseMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask)
 #define NSEC_PER_TICK (1000000000 / BREADBOX_TICKRATE)
 
 extern void view(breadbox_model_t *model);
@@ -27,14 +27,42 @@ const char *ATOM_NAMES[] = {
 
 const GLint GL_ATTR[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
 
+const char *LOG_COLOR[] = {
+    "\e[90m", // BBLOG_DEBUG
+    "\e[31m", // BBLOG_ERROR
+    "",       // BBLOG_INFO
+    "\e[33m"  // BBLOG_WARNING
+};
+
+const char *LOG_LEVEL[] = {
+    "DBG", // BBLOG_DEBUG
+    "ERR", // BBLOG_ERROR
+    "IFO", // BBLOG_INFO
+    "WRN"  // BBLOG_WARNING
+};
+
+const char *LOG_SOURCE[] = {
+    "ENG", // BBLOG_ENGINE
+    "GME", // BBLOG_GAME
+    "SYS"  // BBLOG_SYSTEM
+};
+
 // Because who doesn't like global variables? *cries in ANSI C* ~Alex
 int ALIVE;
 Atom *ATOMS;
 GLXContext CONTEXT;
 Display *DISPLAY;
 struct timespec EPOCH;
-jmp_buf PORTAL;
 Window WINDOW;
+
+float get_subtick();
+
+void breadbox_log(breadbox_log_source_t source, breadbox_log_level_t level, const char *format, va_list args) {
+    float current = get_subtick();
+    printf("%s%9.3f %s %s ", LOG_COLOR[level], current, LOG_SOURCE[source], LOG_LEVEL[level]);
+    vprintf(format, args);
+    printf("\n");
+}
 
 void breadbox_quit(breadbox_t *engine) {
     // Reverting the XAutoRepeatOff we ran earlier. ~Alex
@@ -64,7 +92,7 @@ float get_subtick() {
     float current = 0.0;
     struct timespec now;
     if(clock_gettime(CLOCK_MONOTONIC, &now)) {
-        puts("get_subtick: Failed to read monotonic clock!");
+        breadbox_error_internal(BBLOG_SYSTEM, "get_subtick: Failed to read monotonic clock!");
     } else {
         now.tv_sec -= EPOCH.tv_sec;
         if(EPOCH.tv_nsec > now.tv_nsec) {
@@ -81,7 +109,7 @@ float get_subtick() {
 void interrupt(int sig) {
     // Just in case the engine locks up on my laptop again, this will at least
     // let me type normally... ~Alex
-    puts("interrupt: SIGINT detected! Terminating program gracefully.");
+    breadbox_info_internal(BBLOG_SYSTEM, "interrupt: SIGINT detected! Terminating program gracefully.");
     XAutoRepeatOn(DISPLAY);
     glXMakeCurrent(DISPLAY, None, NULL);
     glXDestroyContext(DISPLAY, CONTEXT);
@@ -102,19 +130,25 @@ int main(int argc, char *argv[]) {
     // Before we do ANYTHING, we'll put a failsafe in so we can handle
     // interrupts at the very least. ~Alex
     signal(SIGINT, interrupt);
+    // Pre-initializing the clock so the timestamps during initialization aren't
+    // messed up. ~Alex
+    if(clock_gettime(CLOCK_MONOTONIC, &EPOCH)) {
+        breadbox_error_internal(BBLOG_SYSTEM, "main: Failed to initialize timer");
+        breadbox_quit(&engine);
+    }
     breadbox_model_init(&engine.model);
     breadbox_subscription_init(&engine.subscriptions);
     breadbox_init(&engine);
     DISPLAY = XOpenDisplay(NULL);
     if(!DISPLAY) {
-        puts("main: Unable to connect to X server!");
+        breadbox_error_internal(BBLOG_SYSTEM, "main: Unable to connect to X server!");
         return 1;
     }
     // Locate some atoms for ICCCM since some window managers aren't very
     // straightforward when it comes to closing windows. ~Alex
     ATOMS = malloc(sizeof(Atom) * 2);
     if(!ATOMS) {
-        puts("main: Unable to allocate space for atoms!");
+        breadbox_error_internal(BBLOG_SYSTEM, "main: Unable to allocate space for atoms!");
         XCloseDisplay(DISPLAY);
         return 1;
     }
@@ -123,20 +157,20 @@ int main(int argc, char *argv[]) {
     // should be safe to do in this case. If I'm wrong, open an issue and I'll
     // fix this. ~Alex
     if(!XInternAtoms(DISPLAY, (char **)ATOM_NAMES, 2, True, ATOMS)) {
-        puts("main: Unable to locate atoms!");
+        breadbox_error_internal(BBLOG_SYSTEM, "main: Unable to locate atoms!");
         free(ATOMS);
         XCloseDisplay(DISPLAY);
         return 1;
     }
     visinfo = glXChooseVisual(DISPLAY, 0, (int *)GL_ATTR);
     if(!visinfo) {
-        puts("main: No compatible visual found!");
+        breadbox_error_internal(BBLOG_SYSTEM, "main: No compatible visual found!");
         free(ATOMS);
         XCloseDisplay(DISPLAY);
         return 1;
     }
     if(create_window(visinfo)) {
-        puts("main: Unable to create WINDOW!");
+        breadbox_error_internal(BBLOG_SYSTEM, "main: Unable to create WINDOW!");
         free(ATOMS);
         XCloseDisplay(DISPLAY);
         return 1;
@@ -145,7 +179,7 @@ int main(int argc, char *argv[]) {
     XStoreName(DISPLAY, WINDOW, "Breadbox");
     CONTEXT = glXCreateContext(DISPLAY, visinfo, NULL, GL_TRUE);
     if(!CONTEXT) {
-        puts("main: Failed to create GL context!");
+        breadbox_error_internal(BBLOG_SYSTEM, "main: Failed to create GL context!");
         XDestroyWindow(DISPLAY, WINDOW);
         free(ATOMS);
         XCloseDisplay(DISPLAY);
@@ -169,16 +203,14 @@ int main(int argc, char *argv[]) {
     // the epoch and the first timestamp as little as possible so it doesn't
     // complaining about missing ticks when the engine first starts. ~Alex
     if(clock_gettime(CLOCK_MONOTONIC, &EPOCH)) {
-        puts("main: Failed to initialize timer");
+        breadbox_error_internal(BBLOG_SYSTEM, "main: Failed to initialize timer");
         breadbox_quit(&engine);
+    } else {
+        breadbox_info_internal(BBLOG_SYSTEM, "main: Initialization complete. Tick values are now real.");
     }
-    // Before we jump into the main loop, let's save the current state of the
-    // application so we can come back in case things get crazy. ~Alex
-    // "Now you're thinking with portals!" -- Valve probably
-    setjmp(PORTAL);
     while(ALIVE) {
         if(clock_gettime(CLOCK_MONOTONIC, &now)) {
-            puts("main: Failed to read the monotonic clock! Things might get weird!");
+            breadbox_error_internal(BBLOG_SYSTEM, "main: Failed to read the monotonic clock! Things might get weird!");
         // Breadbox treats BREADBOX_TICKRATE as the number of expected clock
         // ticks in a second. However, Unix likes to treat the time as a number
         // of seconds since a certain point. Nanoseconds are this awkward
@@ -203,7 +235,8 @@ int main(int argc, char *argv[]) {
                 if(!++engine.model.tick) {
                     // If anybody is crazy enough to run the engine for this long,
                     // let me know about it. They're my kind of crazy. ~Alex
-                    puts(
+                    breadbox_error_internal(
+                        BBLOG_SYSTEM,
                         "main: Did you seriously run this game for almost 7 years"
                         "straight? You have my respect. This message will now"
                         "self-destruct. ~Alex"
@@ -212,7 +245,8 @@ int main(int argc, char *argv[]) {
                     break;
                 } else {
                     if(expected_tick > engine.model.tick) {
-                        printf(
+                        breadbox_warning_internal(
+                            BBLOG_SYSTEM,
                             "main: Running %u ticks behind! What's going on?\n",
                             expected_tick - engine.model.tick
                         );
@@ -231,10 +265,10 @@ int main(int argc, char *argv[]) {
         if(XCheckWindowEvent(DISPLAY, WINDOW, EVENT_MASK, &event)) {
             switch(event.type) {
                 case ButtonPress:
-                    printf("BUTTON: +%u\n", event.xbutton.button);
+                    breadbox_debug_internal(BBLOG_SYSTEM, "BUTTON: +%u", event.xbutton.button);
                     break;
                 case ButtonRelease:
-                    printf("BUTTON: -%u\n", event.xbutton.button);
+                    breadbox_debug_internal(BBLOG_SYSTEM, "BUTTON: -%u", event.xbutton.button);
                     break;
                 // Some window managers aren't nice and decide to simply unmap
                 // windows rather than destroy them. In those cases, we'll
@@ -257,10 +291,10 @@ int main(int argc, char *argv[]) {
                     ALIVE = 0;
                     break;
                 case KeyPress:
-                    printf("KEY: +%u\n", event.xkey.keycode);
+                    breadbox_debug_internal(BBLOG_SYSTEM, "KEY: +%u", event.xkey.keycode);
                     break;
                 case KeyRelease:
-                    printf("KEY: -%u\n", event.xkey.keycode);
+                    breadbox_debug_internal(BBLOG_SYSTEM, "KEY: -%u", event.xkey.keycode);
                     break;
                 default:
                     break;

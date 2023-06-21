@@ -1,7 +1,23 @@
+// I'd like to think that stdarg.h is portable... ~Alex
+#include <stdarg.h>
+
 #ifndef BREADBOX_H
 #define BREADBOX_H
 
 #define BREADBOX_TICKRATE 20
+
+typedef enum {
+    BBLOG_DEBUG,
+    BBLOG_ERROR,
+    BBLOG_INFO,
+    BBLOG_WARNING
+} breadbox_log_level_t;
+
+typedef enum {
+    BBLOG_ENGINE,
+    BBLOG_GAME,
+    BBLOG_SYSTEM
+} breadbox_log_source_t;
 
 typedef enum {
     // Tell the engine that an axis has been updated
@@ -99,8 +115,30 @@ typedef struct {
     breadbox_subscriptions_t subscriptions;
 } breadbox_t;
 
+// Prints a debug message to the log
+void breadbox_debug(const char *format, ...);
+
+// Same as above for internal use only!
+void breadbox_debug_internal(breadbox_log_source_t source, const char *format, ...);
+
+// Prints an error message to the log
+void breadbox_error(const char *format, ...);
+
+// Same as above for internal use only!
+void breadbox_error_internal(breadbox_log_source_t source, const char *format, ...);
+
+// Prints an informational message to the log
+void breadbox_info(const char *format, ...);
+
+// I think you get the idea at this point. ~Alex
+void breadbox_info_internal(breadbox_log_source_t source, const char *format, ...);
+
 // Initializes the game, not the engine.
 void breadbox_init(breadbox_t *engine);
+
+// Prints a message to the log. It's recommended to use the debug, error, info,
+// and warning functions to preserve your remaining sanity. ~Alex
+void breadbox_log(breadbox_log_source_t source, breadbox_log_level_t level, const char *format, va_list args);
 
 // Initializes the model
 void breadbox_model_init(breadbox_model_t *model);
@@ -120,5 +158,11 @@ void breadbox_subscription_init(breadbox_subscriptions_t *subs);
 // properly. Unless this is called from the subscription service, you should
 // probably be using breadbox_publish instead. ~Alex
 void breadbox_update(breadbox_t *engine, breadbox_message_t *msg);
+
+// Prints a warning message to the log
+void breadbox_warning(const char *format, ...);
+
+// The internal version of breadbox_warning
+void breadbox_warning_internal(breadbox_log_source_t source, const char *format, ...);
 
 #endif
