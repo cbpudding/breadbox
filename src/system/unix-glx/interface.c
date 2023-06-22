@@ -1,3 +1,6 @@
+// Because ANSI C doesn't know what a POSIX is. ~Alex
+#define _XOPEN_SOURCE 500
+
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -28,10 +31,10 @@ const char *ATOM_NAMES[] = {
 const GLint GL_ATTR[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
 
 const char *LOG_COLOR[] = {
-    "\e[90m", // BBLOG_DEBUG
-    "\e[31m", // BBLOG_ERROR
+    "\x1B[90m", // BBLOG_DEBUG
+    "\x1B[31m", // BBLOG_ERROR
     "",       // BBLOG_INFO
-    "\e[33m"  // BBLOG_WARNING
+    "\x1B[33m"  // BBLOG_WARNING
 };
 
 const char *LOG_LEVEL[] = {
@@ -73,10 +76,10 @@ void breadbox_log(
         LOG_LEVEL[level]
     );
     vprintf(format, args);
-    puts("\e[0m");
+    puts("\x1B[0m");
 }
 
-void breadbox_quit(breadbox_t *engine) {
+void breadbox_quit() {
     glXMakeCurrent(DISPLAY, None, NULL);
     glXDestroyContext(DISPLAY, CONTEXT);
     // TODO: What if the window hasn't been destroyed yet? ~Alex
@@ -117,11 +120,13 @@ float get_subtick() {
 }
 
 void interrupt(int sig) {
-    breadbox_warning_internal(BBLOG_SYSTEM, "interrupt: SIGINT detected! Requesting engine close.");
-    ALIVE = 0;
+    if(sig == SIGINT) {
+        breadbox_warning_internal(BBLOG_SYSTEM, "interrupt: SIGINT detected! Requesting engine close.");
+        ALIVE = 0;
+    }
 }
 
-int main(int argc, char *argv[]) {
+int main(void) {
     breadbox_t engine;
     XEvent event;
     int expected_tick;
@@ -202,7 +207,7 @@ int main(int argc, char *argv[]) {
     // complaining about missing ticks when the engine first starts. ~Alex
     if(clock_gettime(CLOCK_MONOTONIC, &EPOCH)) {
         breadbox_error_internal(BBLOG_SYSTEM, "main: Failed to initialize timer");
-        breadbox_quit(&engine);
+        breadbox_quit();
     } else {
         breadbox_info_internal(BBLOG_SYSTEM, "main: Initialization complete. Tick values are now real.");
     }
@@ -275,7 +280,7 @@ int main(int argc, char *argv[]) {
                 case ClientMessage:
                     if(event.xclient.message_type == ATOMS[WM_PROTOCOLS]) {
                         // TODO: Maybe we'll need to handle other similar requests in the future?
-                        if(event.xclient.data.l[0] == ATOMS[WM_DELETE_WINDOW]) {
+                        if((Atom)event.xclient.data.l[0] == ATOMS[WM_DELETE_WINDOW]) {
                             // As you wish! ~Alex
                             ALIVE = 0;
                             XDestroyWindow(DISPLAY, WINDOW);
@@ -301,6 +306,6 @@ int main(int argc, char *argv[]) {
             view(&engine.model);
         }
     }
-    breadbox_quit(&engine);
+    breadbox_quit();
     return 0;
 }

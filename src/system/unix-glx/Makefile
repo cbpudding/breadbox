@@ -1,4 +1,4 @@
-CFLAGS=-I../../../include
+CFLAGS=-std=c99 -I../../../include -pedantic -Wall -Wextra
 
 BACKEND=unix-glx
 

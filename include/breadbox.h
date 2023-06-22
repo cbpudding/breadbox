@@ -151,7 +151,7 @@ void breadbox_publish(breadbox_t *engine, breadbox_message_t *msg);
 
 // This function is used by the game itself to let the platform know that we're
 // done and everything can be shut down. ~Alex
-void breadbox_quit(breadbox_t *engine);
+void breadbox_quit();
 
 // Subscribes to a specific message type so the update function is fired when
 // the event is received.
