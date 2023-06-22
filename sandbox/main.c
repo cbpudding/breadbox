@@ -3,6 +3,7 @@
 #include "breadbox.h"
 
 void breadbox_init(breadbox_t *engine) {
+    breadbox_subscribe(&engine->subscriptions, BBMSG_TICK);
     // ...
     breadbox_info("Sandbox started");
 }

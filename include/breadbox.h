@@ -1,5 +1,6 @@
-// I'd like to think that stdarg.h is portable... ~Alex
+// I'd like to think that stdarg.h and stdint.h are portable... ~Alex
 #include <stdarg.h>
+#include <stdint.h>
 
 #ifndef BREADBOX_H
 #define BREADBOX_H
@@ -95,8 +96,7 @@ typedef struct {
     breadbox_message_type_t type;
     // Details about the message
     union {
-        // TODO: Define actual message variants
-        int placeholder;
+        float floating;
     } data;
 } breadbox_message_t;
 
@@ -108,6 +108,9 @@ typedef struct {
 typedef struct {
     // Configurable input axes
     float axes[32];
+    // Determine which events fire the update function
+    // There's probably a better way to declare a 128-bit integer... ~Alex
+    uint32_t mask[4];
 } breadbox_subscriptions_t;
 
 typedef struct {
@@ -149,6 +152,10 @@ void breadbox_publish(breadbox_t *engine, breadbox_message_t *msg);
 // This function is used by the game itself to let the platform know that we're
 // done and everything can be shut down. ~Alex
 void breadbox_quit(breadbox_t *engine);
+
+// Subscribes to a specific message type so the update function is fired when
+// the event is received.
+void breadbox_subscribe(breadbox_subscriptions_t *subs, breadbox_message_type_t type);
 
 // Initializes engine subscriptions
 void breadbox_subscription_init(breadbox_subscriptions_t *subs);

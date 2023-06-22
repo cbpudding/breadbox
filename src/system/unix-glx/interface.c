@@ -66,7 +66,7 @@ void breadbox_log(
 ) {
     float current = get_subtick();
     printf(
-        "%s%13.3f %s %s ",
+        "\r%s%13.3f %s %s ",
         LOG_COLOR[level],
         current,
         LOG_SOURCE[source],
@@ -117,15 +117,8 @@ float get_subtick() {
 }
 
 void interrupt(int sig) {
-    // Just in case the engine locks up on my laptop again, this will at least
-    // let me type normally... ~Alex
-    breadbox_info_internal(BBLOG_SYSTEM, "interrupt: SIGINT detected! Terminating program gracefully.");
-    glXMakeCurrent(DISPLAY, None, NULL);
-    glXDestroyContext(DISPLAY, CONTEXT);
-    XDestroyWindow(DISPLAY, WINDOW);
-    free(ATOMS);
-    XCloseDisplay(DISPLAY);
-    exit(1);
+    breadbox_warning_internal(BBLOG_SYSTEM, "interrupt: SIGINT detected! Requesting engine close.");
+    ALIVE = 0;
 }
 
 int main(int argc, char *argv[]) {
