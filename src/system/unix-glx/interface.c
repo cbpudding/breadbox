@@ -58,16 +58,25 @@ Window WINDOW;
 // Predefinition for get_subtick here because breadbox_log relies on it. ~Alex
 float get_subtick();
 
-void breadbox_log(breadbox_log_source_t source, breadbox_log_level_t level, const char *format, va_list args) {
+void breadbox_log(
+    breadbox_log_source_t source,
+    breadbox_log_level_t level,
+    const char *format,
+    va_list args
+) {
     float current = get_subtick();
-    printf("%s%13.3f %s %s ", LOG_COLOR[level], current, LOG_SOURCE[source], LOG_LEVEL[level]);
+    printf(
+        "%s%13.3f %s %s ",
+        LOG_COLOR[level],
+        current,
+        LOG_SOURCE[source],
+        LOG_LEVEL[level]
+    );
     vprintf(format, args);
-    printf("\n");
+    puts("\e[0m");
 }
 
 void breadbox_quit(breadbox_t *engine) {
-    // Reverting the XAutoRepeatOff we ran earlier. ~Alex
-    XAutoRepeatOn(DISPLAY);
     glXMakeCurrent(DISPLAY, None, NULL);
     glXDestroyContext(DISPLAY, CONTEXT);
     // TODO: What if the window hasn't been destroyed yet? ~Alex
@@ -111,10 +120,10 @@ void interrupt(int sig) {
     // Just in case the engine locks up on my laptop again, this will at least
     // let me type normally... ~Alex
     breadbox_info_internal(BBLOG_SYSTEM, "interrupt: SIGINT detected! Terminating program gracefully.");
-    XAutoRepeatOn(DISPLAY);
     glXMakeCurrent(DISPLAY, None, NULL);
     glXDestroyContext(DISPLAY, CONTEXT);
     XDestroyWindow(DISPLAY, WINDOW);
+    free(ATOMS);
     XCloseDisplay(DISPLAY);
     exit(1);
 }
@@ -195,11 +204,6 @@ int main(int argc, char *argv[]) {
     // again. ~Alex
     XGetWindowAttributes(DISPLAY, WINDOW, &winattr);
     glViewport(0, 0, winattr.width, winattr.height);
-    // We don't want to deal with event spam from X so we'll tell it that we're
-    // only looking for input changes and we don't want auto-repeating keys. ~Alex
-    // TODO: Is there a better way of doing this? This disables auto-repeat for
-    // EVERY window on the display. ~Alex
-    XAutoRepeatOff(DISPLAY);
     // We're putting epoch initialization here to make the difference between
     // the epoch and the first timestamp as little as possible so it doesn't
     // complaining about missing ticks when the engine first starts. ~Alex
