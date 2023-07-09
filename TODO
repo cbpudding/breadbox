@@ -1,0 +1,8 @@
+Outstanding tasks:
+- (breadbox) What is the best way to represent game objects in the model?
+- (breadbox) How should resources be handled? This may largely depend on how the model represents objects.
+- (breadbox) How should inputs be mapped to events? I would hate to statically assign buttons to axes/triggers.
+
+Known Issues:
+- (unix-glx) Some window managers simply unmap windows rather than destroying them.
+  - ICCCM support has been added, although it is currently untested. Is this fixed? ~Alex

@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 #include "breadbox.h"
 
 void breadbox_init(breadbox_t *engine) {
