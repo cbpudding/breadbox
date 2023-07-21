@@ -7,6 +7,21 @@
 
 #define BREADBOX_TICKRATE 20
 
+typedef struct breadbox_list_node_t {
+    void *data;
+    struct breadbox_list_node_t *last;
+    struct breadbox_list_node_t *next;
+} breadbox_list_node_t;
+
+typedef struct {
+    breadbox_list_node_t *head;
+    breadbox_list_node_t *tail;
+} breadbox_list_t;
+
+typedef struct {
+    breadbox_list_node_t *next;
+} breadbox_list_iter_t;
+
 typedef enum {
     BBLOG_DEBUG,
     BBLOG_ERROR,
@@ -138,6 +153,27 @@ void breadbox_info_internal(breadbox_log_source_t source, const char *format, ..
 
 // Initializes the game, not the engine.
 void breadbox_init(breadbox_t *engine);
+
+// Appends a node to the list
+void breadbox_list_append(breadbox_list_t *list, void *data);
+
+// Gets a node at a specific index
+breadbox_list_node_t *breadbox_list_get(breadbox_list_t *list, int i);
+
+// Frees a list and all of its nodes
+void breadbox_list_free(breadbox_list_t *list);
+
+// Initializes a brand new list
+void breadbox_list_init(breadbox_list_t *list);
+
+// Initializes an iterator for a list
+void breadbox_list_iter(breadbox_list_t *list, breadbox_list_iter_t *iter);
+
+// Gets the next node of a list from an iterator
+breadbox_list_node_t *breadbox_list_next(breadbox_list_iter_t *iter);
+
+// Removes a node from the list
+void breadbox_list_remove(breadbox_list_t *list, breadbox_list_node_t *node);
 
 // Prints a message to the log. It's recommended to use the debug, error, info,
 // and warning functions to preserve your remaining sanity. ~Alex
