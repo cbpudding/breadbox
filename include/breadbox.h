@@ -116,6 +116,8 @@ typedef struct {
 } breadbox_message_t;
 
 typedef struct {
+    // List of all the objects that can be rendered
+    breadbox_list_t renderable;
     // Current game tick
     int tick;
 } breadbox_model_t;
@@ -178,6 +180,9 @@ void breadbox_list_remove(breadbox_list_t *list, breadbox_list_node_t *node);
 // Prints a message to the log. It's recommended to use the debug, error, info,
 // and warning functions to preserve your remaining sanity. ~Alex
 void breadbox_log(breadbox_log_source_t source, breadbox_log_level_t level, const char *format, va_list args);
+
+// Frees the model from memory
+void breadbox_model_free(breadbox_model_t *model);
 
 // Initializes the model
 void breadbox_model_init(breadbox_model_t *model);

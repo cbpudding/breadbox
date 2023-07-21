@@ -55,6 +55,7 @@ int ALIVE;
 Atom *ATOMS;
 GLXContext CONTEXT;
 Display *DISPLAY;
+breadbox_t ENGINE;
 struct timespec EPOCH;
 Window WINDOW;
 
@@ -85,6 +86,7 @@ void breadbox_quit() {
     // TODO: What if the window hasn't been destroyed yet? ~Alex
     free(ATOMS);
     XCloseDisplay(DISPLAY);
+    breadbox_model_free(&ENGINE.model);
     exit(ALIVE);
 }
 
@@ -127,7 +129,6 @@ void interrupt(int sig) {
 }
 
 int main(void) {
-    breadbox_t engine;
     XEvent event;
     int expected_tick;
     breadbox_message_t msg;
@@ -144,9 +145,9 @@ int main(void) {
         breadbox_error_internal(BBLOG_SYSTEM, "main: Failed to initialize timer");
         return 1;
     }
-    breadbox_model_init(&engine.model);
-    breadbox_subscription_init(&engine.subscriptions);
-    breadbox_init(&engine);
+    breadbox_model_init(&ENGINE.model);
+    breadbox_subscription_init(&ENGINE.subscriptions);
+    breadbox_init(&ENGINE);
     DISPLAY = XOpenDisplay(NULL);
     if(!DISPLAY) {
         breadbox_error_internal(BBLOG_SYSTEM, "main: Unable to connect to X server!");
@@ -234,8 +235,8 @@ int main(void) {
                 now.tv_nsec -= EPOCH.tv_nsec;
             }
             expected_tick = (now.tv_sec * BREADBOX_TICKRATE) + (now.tv_nsec / NSEC_PER_TICK);
-            if(expected_tick > engine.model.tick) {
-                if(!++engine.model.tick) {
+            if(expected_tick > ENGINE.model.tick) {
+                if(!++ENGINE.model.tick) {
                     // If anybody is crazy enough to run the engine for this long,
                     // let me know about it. They're my kind of crazy. ~Alex
                     breadbox_error_internal(
@@ -247,15 +248,15 @@ int main(void) {
                     ALIVE = 0;
                     break;
                 } else {
-                    if(expected_tick > engine.model.tick) {
+                    if(expected_tick > ENGINE.model.tick) {
                         breadbox_warning_internal(
                             BBLOG_SYSTEM,
                             "main: Running %u ticks behind! What's going on?\n",
-                            expected_tick - engine.model.tick
+                            expected_tick - ENGINE.model.tick
                         );
                     }
                     msg.type = BBMSG_TICK;
-                    breadbox_publish(&engine, &msg);
+                    breadbox_publish(&ENGINE, &msg);
                 }
             }
         }
@@ -303,7 +304,7 @@ int main(void) {
                     break;
             }
         } else {
-            view(&engine.model);
+            view(&ENGINE.model);
         }
     }
     breadbox_quit();
