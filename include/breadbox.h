@@ -22,6 +22,28 @@ typedef struct {
     breadbox_list_node_t *next;
 } breadbox_list_iter_t;
 
+// Needed by breadbox_face_t
+typedef struct {
+    float x;
+    float y;
+    float z;
+} breadbox_vertex_t;
+
+// Here because it relies on breadbox_vertex_t
+typedef struct {
+    breadbox_vertex_t *a;
+    breadbox_vertex_t *b;
+    breadbox_vertex_t *c;
+} breadbox_face_t;
+
+// Here because it relies on breadbox_list_t
+typedef struct {
+    // List of unique faces in the geometry(breadbox_face_t)
+    breadbox_list_t faces;
+    // List of unique points in space(breadbox_vertex_t)
+    breadbox_list_t vertices;
+} breadbox_geometry_t;
+
 typedef enum {
     BBLOG_DEBUG,
     BBLOG_ERROR,
@@ -116,8 +138,8 @@ typedef struct {
 } breadbox_message_t;
 
 typedef struct {
-    // List of all the objects that can be rendered
-    breadbox_list_t renderable;
+    // List of all the objects that can be rendered(breadbox_geometry_t)
+    breadbox_list_t geometry;
     // Current game tick
     int tick;
 } breadbox_model_t;
@@ -134,6 +156,9 @@ typedef struct {
     breadbox_model_t model;
     breadbox_subscriptions_t subscriptions;
 } breadbox_t;
+
+// Free resources before the game closes
+void breadbox_cleanup(breadbox_t *engine);
 
 // Prints a debug message to the log
 void breadbox_debug(const char *format, ...);

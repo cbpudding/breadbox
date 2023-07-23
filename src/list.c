@@ -13,7 +13,7 @@ void breadbox_list_append(breadbox_list_t *list, void *data) {
         list->tail = victim;
     } else {
         list->tail->next = victim;
-        victim->last = list->tail->next;
+        victim->last = list->tail;
         list->tail = victim;
     }
 }
@@ -30,10 +30,12 @@ breadbox_list_node_t *breadbox_list_get(breadbox_list_t *list, int i) {
 
 // Frees a list and all of its nodes
 void breadbox_list_free(breadbox_list_t *list) {
+    breadbox_list_node_t *next;
     breadbox_list_node_t *victim = list->head;
     while(victim) {
-        victim = victim->next;
-        free(victim->last);
+        next = victim->next;
+        free(victim);
+        victim = next;
     }
     list->head = NULL;
     list->tail = NULL;

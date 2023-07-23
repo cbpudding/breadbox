@@ -86,6 +86,7 @@ void breadbox_quit() {
     // TODO: What if the window hasn't been destroyed yet? ~Alex
     free(ATOMS);
     XCloseDisplay(DISPLAY);
+    breadbox_cleanup(&ENGINE);
     breadbox_model_free(&ENGINE.model);
     exit(ALIVE);
 }
