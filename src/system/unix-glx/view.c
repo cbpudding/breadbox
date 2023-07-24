@@ -26,8 +26,8 @@ void view(breadbox_model_t *model) {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     // bananas ROTAT E ~Alex
-    angle = fmodf(get_subtick(), (float)BREADBOX_TICKRATE) / (float)BREADBOX_TICKRATE;
-    glRotatef(angle * 360.0, 0.0, 1.0, 0.0);
+    angle = fmodf(get_subtick(), (float)BREADBOX_TICKRATE * 4.0) / (float)BREADBOX_TICKRATE * 0.25;
+    glRotatef(angle * 360.0, 1.0, 1.0, 0.0);
     // End test projection
     // Code for initializing color cycling
     r = 0.0;
@@ -37,13 +37,13 @@ void view(breadbox_model_t *model) {
         geometry = (breadbox_geometry_t *)victim->data;
         breadbox_list_iter(&geometry->faces, &faces);
         glBegin(GL_TRIANGLES);
-        // Cycle colors every face for testing
-        t = b;
-        b = g;
-        g = r;
-        r = t;
-        glColor3f(r, g, b);
         while((victim = breadbox_list_next(&faces))) {
+            // Cycle colors every face for testing
+            t = b;
+            b = g;
+            g = r;
+            r = t;
+            glColor3f(r, g, b);
             face = (breadbox_face_t *)victim->data;
             glVertex3f(face->a->x, face->a->y, face->a->z);
             glVertex3f(face->b->x, face->b->y, face->b->z);
