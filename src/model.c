@@ -6,6 +6,16 @@ void breadbox_geometry_face(breadbox_face_t *face, breadbox_vertex_t *a, breadbo
     face->c = c;
 }
 
+void breadbox_geometry_free(breadbox_geometry_t *geometry) {
+    breadbox_list_free(&geometry->faces);
+    breadbox_list_free(&geometry->vertices);
+}
+
+void breadbox_geometry_init(breadbox_geometry_t *geometry) {
+    breadbox_list_init(&geometry->faces);
+    breadbox_list_init(&geometry->vertices);
+}
+
 void breadbox_geometry_vertex(breadbox_vertex_t *vertex, float x, float y, float z) {
     vertex->x = x;
     vertex->y = y;

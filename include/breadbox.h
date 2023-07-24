@@ -175,6 +175,12 @@ void breadbox_error_internal(breadbox_log_source_t source, const char *format, .
 // A convenience function to populate a face
 void breadbox_geometry_face(breadbox_face_t *face, breadbox_vertex_t *a, breadbox_vertex_t *b, breadbox_vertex_t *c);
 
+// Frees a geometry object
+void breadbox_geometry_free(breadbox_geometry_t *geometry);
+
+// Initializes a geometry object
+void breadbox_geometry_init(breadbox_geometry_t *geometry);
+
 // A convenience function to populate a vertex
 void breadbox_geometry_vertex(breadbox_vertex_t *vertex, float x, float y, float z);
 
