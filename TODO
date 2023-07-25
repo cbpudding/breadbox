@@ -1,6 +1,14 @@
 Outstanding tasks:
 - (breadbox) How should inputs be mapped to events? I would hate to statically assign buttons to axes/triggers.
+  - Assigning an expression to an axis/trigger would be a nice, stateless way to get this done. ~Alex
+- (breadbox) How should the viewport be handled?
+- (breadbox) How should lighting be handled?
+- (breadbox) How should textures be handled?
+  - Does all geometry require textures or would that be too taxing on VRAM? ~Alex
+  - Maybe bundle textures in with a kind of material definition for lighting/texture definitions. ~Alex
+- (breadbox) How can we make breadbox_list_t more efficient?
+- (breadbox) Where to start with sound?
 
 Known Issues:
 - (unix-glx) Some window managers simply unmap windows rather than destroying them.
-  - ICCCM support has been added, although it is currently untested. Is this fixed? ~Alex
+  - ICCCM support has been added, but the engine keeps running when the window is closed. What did I do wrong this time? ~Alex

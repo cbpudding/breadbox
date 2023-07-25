@@ -1,6 +1,9 @@
 // Because ANSI C doesn't know what a POSIX is. ~Alex
 #define _XOPEN_SOURCE 500
 
+// FOR DEBUGGING PURPOSES
+#include <malloc.h>
+
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -213,6 +216,8 @@ int main(void) {
     } else {
         breadbox_info_internal(BBLOG_SYSTEM, "main: Initialization complete. Tick values are now real.");
     }
+    // FOR DEBUGGING PURPOSES
+    malloc_stats();
     while(ALIVE) {
         if(clock_gettime(CLOCK_MONOTONIC, &now)) {
             breadbox_error_internal(BBLOG_SYSTEM, "main: Failed to read the monotonic clock! Things might get weird!");
