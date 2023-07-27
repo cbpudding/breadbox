@@ -1,7 +1,6 @@
 Outstanding tasks:
 - (breadbox) How should inputs be mapped to events? I would hate to statically assign buttons to axes/triggers.
   - Assigning an expression to an axis/trigger would be a nice, stateless way to get this done. ~Alex
-- (breadbox) How should the viewport be handled?
 - (breadbox) How should lighting be handled?
 - (breadbox) How should textures be handled?
   - Does all geometry require textures or would that be too taxing on VRAM? ~Alex

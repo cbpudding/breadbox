@@ -1,3 +1,5 @@
+#include <stddef.h>
+
 #include "breadbox.h"
 
 void breadbox_geometry_face(breadbox_face_t *face, breadbox_vertex_t *a, breadbox_vertex_t *b, breadbox_vertex_t *c) {
@@ -29,4 +31,5 @@ void breadbox_model_free(breadbox_model_t *model) {
 void breadbox_model_init(breadbox_model_t *model) {
     breadbox_list_init(&model->geometry);
     model->tick = 0;
+    model->view = NULL;
 }

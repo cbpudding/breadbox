@@ -13,7 +13,6 @@ extern Window WINDOW;
 extern float get_subtick();
 
 void view(breadbox_model_t *model) {
-    float angle;
     breadbox_face_t *face;
     breadbox_list_iter_t faces;
     breadbox_geometry_t *geometry;
@@ -24,10 +23,11 @@ void view(breadbox_model_t *model) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // Test projection matrix to be replaced later
     glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    // bananas ROTAT E ~Alex
-    angle = fmodf(get_subtick(), (float)BREADBOX_TICKRATE * 4.0) / (float)BREADBOX_TICKRATE * 0.25;
-    glRotatef(angle * 360.0, 1.0, 1.0, 0.0);
+    if(model->view) {
+        glLoadMatrixf((GLfloat *)model->view);
+    } else {
+        glLoadIdentity();
+    }
     // End test projection
     // Code for initializing color cycling
     r = 0.0;

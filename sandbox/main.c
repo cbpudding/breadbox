@@ -3,12 +3,15 @@
 breadbox_vertex_t TEST_VERTICES[8];
 breadbox_face_t TEST_FACES[12];
 breadbox_geometry_t TEST;
+breadbox_matrix_t VIEW;
 
 void breadbox_cleanup(breadbox_t *engine) {
     breadbox_geometry_free(&TEST);
 }
 
 void breadbox_init(breadbox_t *engine) {
+    breadbox_matrix_identity(&VIEW);
+    engine->model.view = &VIEW;
     breadbox_subscribe(&engine->subscriptions, BBMSG_TICK);
     breadbox_geometry_vertex(&TEST_VERTICES[0], -0.5, -0.5, -0.5);
     breadbox_geometry_vertex(&TEST_VERTICES[1], 0.5, -0.5, -0.5);

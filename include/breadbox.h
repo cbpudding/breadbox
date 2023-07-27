@@ -22,6 +22,8 @@ typedef struct {
     breadbox_list_node_t *next;
 } breadbox_list_iter_t;
 
+typedef float breadbox_matrix_t[16];
+
 // Needed by breadbox_face_t
 typedef struct {
     float x;
@@ -142,6 +144,8 @@ typedef struct {
     breadbox_list_t geometry;
     // Current game tick
     int tick;
+    // The view matrix
+    breadbox_matrix_t *view;
 } breadbox_model_t;
 
 typedef struct {
@@ -217,6 +221,9 @@ void breadbox_list_remove(breadbox_list_t *list, breadbox_list_node_t *node);
 // Prints a message to the log. It's recommended to use the debug, error, info,
 // and warning functions to preserve your remaining sanity. ~Alex
 void breadbox_log(breadbox_log_source_t source, breadbox_log_level_t level, const char *format, va_list args);
+
+// Loads the identity matrix
+void breadbox_matrix_identity(breadbox_matrix_t matrix);
 
 // Frees the model from memory
 void breadbox_model_free(breadbox_model_t *model);
