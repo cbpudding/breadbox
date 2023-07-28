@@ -15,8 +15,8 @@ extern float get_subtick();
 void view(breadbox_model_t *model) {
     breadbox_face_t *face;
     breadbox_list_iter_t faces;
+    breadbox_material_t *material;
     breadbox_prop_t *prop;
-    float r, g, b, t;
     breadbox_list_iter_t props;
     breadbox_list_node_t *victim;
     breadbox_list_iter(&model->props, &props);
@@ -27,21 +27,13 @@ void view(breadbox_model_t *model) {
     } else {
         glLoadIdentity();
     }
-    // Code for initializing color cycling
-    r = 0.0;
-    g = 0.0;
-    b = 1.0;
     while((victim = breadbox_list_next(&props))) {
         prop = (breadbox_prop_t *)victim->data;
-        breadbox_list_iter(&prop->geometry->faces, &faces);
+        material = prop->material;
         glBegin(GL_TRIANGLES);
+        glColor3f(material->color.r, material->color.g, material->color.b);
+        breadbox_list_iter(&prop->geometry->faces, &faces);
         while((victim = breadbox_list_next(&faces))) {
-            // Cycle colors every face for testing
-            t = b;
-            b = g;
-            g = r;
-            r = t;
-            glColor3f(r, g, b);
             face = (breadbox_face_t *)victim->data;
             glVertex3f(face->a->x, face->a->y, face->a->z);
             glVertex3f(face->b->x, face->b->y, face->b->z);

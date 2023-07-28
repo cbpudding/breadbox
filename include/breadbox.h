@@ -24,12 +24,23 @@ typedef struct {
 
 typedef float breadbox_matrix_t[16];
 
+typedef struct {
+    float r;
+    float g;
+    float b;
+} breadbox_color_t;
+
 // Needed by breadbox_face_t
 typedef struct {
     float x;
     float y;
     float z;
 } breadbox_vertex_t;
+
+typedef struct {
+    // The base color of the material
+    breadbox_color_t color;
+} breadbox_material_t;
 
 // Here because it relies on breadbox_vertex_t
 typedef struct {
@@ -49,6 +60,8 @@ typedef struct {
 typedef struct {
     // The geometry of the prop
     breadbox_geometry_t *geometry;
+    // The material of the prop
+    breadbox_material_t *material;
 } breadbox_prop_t;
 
 typedef enum {
