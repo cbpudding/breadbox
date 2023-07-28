@@ -46,6 +46,11 @@ typedef struct {
     breadbox_list_t vertices;
 } breadbox_geometry_t;
 
+typedef struct {
+    // The geometry of the prop
+    breadbox_geometry_t *geometry;
+} breadbox_prop_t;
+
 typedef enum {
     BBLOG_DEBUG,
     BBLOG_ERROR,
@@ -140,8 +145,8 @@ typedef struct {
 } breadbox_message_t;
 
 typedef struct {
-    // List of all the objects that can be rendered(breadbox_geometry_t)
-    breadbox_list_t geometry;
+    // List of all the props(breadbox_prop_t) in the game
+    breadbox_list_t props;
     // Current game tick
     int tick;
     // The view matrix

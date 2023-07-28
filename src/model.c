@@ -25,11 +25,11 @@ void breadbox_geometry_vertex(breadbox_vertex_t *vertex, float x, float y, float
 }
 
 void breadbox_model_free(breadbox_model_t *model) {
-    breadbox_list_free(&model->geometry);
+    breadbox_list_free(&model->props);
 }
 
 void breadbox_model_init(breadbox_model_t *model) {
-    breadbox_list_init(&model->geometry);
+    breadbox_list_init(&model->props);
     model->tick = 0;
     model->view = NULL;
 }
