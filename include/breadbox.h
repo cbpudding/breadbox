@@ -243,6 +243,9 @@ void breadbox_log(breadbox_log_source_t source, breadbox_log_level_t level, cons
 // Loads the identity matrix
 void breadbox_matrix_identity(breadbox_matrix_t matrix);
 
+// Multiplies a matrix by another matrix
+void breadbox_matrix_multiply(breadbox_matrix_t result, breadbox_matrix_t a, breadbox_matrix_t b);
+
 // Frees the model from memory
 void breadbox_model_free(breadbox_model_t *model);
 
