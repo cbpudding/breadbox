@@ -47,6 +47,7 @@ void breadbox_init(breadbox_t *engine) {
     TEST_MATERIAL.color.b = 0.96;
     TEST.geometry = &TEST_GEOMETRY;
     TEST.material = &TEST_MATERIAL;
+    breadbox_matrix_identity((float *) &TEST.matrix);
     breadbox_list_append(&engine->model.props, (void *)&TEST);
     // ...
     breadbox_info("Sandbox started");

@@ -27,9 +27,11 @@ void view(breadbox_model_t *model) {
     } else {
         glLoadIdentity();
     }
+    glMatrixMode(GL_MODELVIEW);
     while((victim = breadbox_list_next(&props))) {
         prop = (breadbox_prop_t *)victim->data;
         material = prop->material;
+        glLoadMatrixf((GLfloat *) &prop->matrix);
         glBegin(GL_TRIANGLES);
         glColor3f(material->color.r, material->color.g, material->color.b);
         breadbox_list_iter(&prop->geometry->faces, &faces);

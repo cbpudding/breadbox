@@ -62,6 +62,8 @@ typedef struct {
     breadbox_geometry_t *geometry;
     // The material of the prop
     breadbox_material_t *material;
+    // The model matrix for transforming/rotating/scaling
+    breadbox_matrix_t matrix;
 } breadbox_prop_t;
 
 typedef enum {
