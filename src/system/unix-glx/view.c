@@ -37,6 +37,7 @@ void view(breadbox_model_t *model) {
         breadbox_list_iter(&prop->geometry->faces, &faces);
         while((victim = breadbox_list_next(&faces))) {
             face = (breadbox_face_t *)victim->data;
+            glNormal3f(face->normal.x, face->normal.y, face->normal.z);
             glVertex3f(face->a->x, face->a->y, face->a->z);
             glVertex3f(face->b->x, face->b->y, face->b->z);
             glVertex3f(face->c->x, face->c->y, face->c->z);

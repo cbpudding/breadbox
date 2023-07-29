@@ -47,6 +47,7 @@ typedef struct {
     breadbox_vertex_t *a;
     breadbox_vertex_t *b;
     breadbox_vertex_t *c;
+    breadbox_vertex_t normal;
 } breadbox_face_t;
 
 // Here because it relies on breadbox_list_t
