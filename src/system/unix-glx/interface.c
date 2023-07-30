@@ -60,10 +60,16 @@ GLXContext CONTEXT;
 Display *DISPLAY;
 breadbox_t ENGINE;
 struct timespec EPOCH;
+breadbox_list_t INPUT_PROGRAM;
 Window WINDOW;
 
 // Predefinition for get_subtick here because breadbox_log relies on it. ~Alex
 float get_subtick();
+
+// Input interpreter functions
+void input_free(breadbox_list_t *program);
+int input_parse(breadbox_list_t *program, FILE *script);
+int input_update(breadbox_list_t *program, breadbox_t *engine);
 
 void breadbox_log(
     breadbox_log_source_t source,
@@ -89,6 +95,7 @@ void breadbox_quit() {
     // TODO: What if the window hasn't been destroyed yet? ~Alex
     free(ATOMS);
     XCloseDisplay(DISPLAY);
+    input_free(&INPUT_PROGRAM);
     breadbox_cleanup(&ENGINE);
     breadbox_model_free(&ENGINE.model);
     exit(ALIVE);
@@ -135,6 +142,7 @@ void interrupt(int sig) {
 int main(void) {
     XEvent event;
     int expected_tick;
+    FILE *input_script;
     breadbox_message_t msg;
     struct timespec now;
     XVisualInfo *visinfo;
@@ -198,6 +206,12 @@ int main(void) {
         XCloseDisplay(DISPLAY);
         return 1;
     }
+    // Temporary input handling stuff. Will be replaced with more robust code
+    // later. ~Alex
+    input_script = fopen("sandbox/default.fth", "r");
+    breadbox_list_init(&INPUT_PROGRAM);
+    input_parse(&INPUT_PROGRAM, input_script);
+    fclose(input_script);
     // XSelectInput needs to happen after glXCreateContext because OpenGL fails
     // to load otherwise. ~Alex
     XSelectInput(DISPLAY, WINDOW, EVENT_MASK);
@@ -216,8 +230,7 @@ int main(void) {
     } else {
         breadbox_info_internal(BBLOG_SYSTEM, "main: Initialization complete. Tick values are now real.");
     }
-    // FOR DEBUGGING PURPOSES
-    malloc_stats();
+    malloc_stats(); // FOR TESTING PURPOSES
     while(ALIVE) {
         if(clock_gettime(CLOCK_MONOTONIC, &now)) {
             breadbox_error_internal(BBLOG_SYSTEM, "main: Failed to read the monotonic clock! Things might get weird!");
