@@ -261,8 +261,8 @@ int main(void) {
                             expected_tick - ENGINE.model.tick
                         );
                     }
-                    msg.type = BBMSG_TICK;
-                    breadbox_publish(&ENGINE, &msg);
+                    msg = BBMSG_TICK;
+                    breadbox_publish(&ENGINE, msg);
                 }
             }
         }

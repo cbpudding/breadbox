@@ -149,15 +149,6 @@ typedef enum {
     BBMSG_TRIGGER29,
     BBMSG_TRIGGER30,
     BBMSG_TRIGGER31
-} breadbox_message_type_t;
-
-typedef struct {
-    // The type of message being sent
-    breadbox_message_type_t type;
-    // Details about the message
-    union {
-        float floating;
-    } data;
 } breadbox_message_t;
 
 typedef struct {
@@ -256,7 +247,7 @@ void breadbox_model_free(breadbox_model_t *model);
 void breadbox_model_init(breadbox_model_t *model);
 
 // This is the main way the engine is notified of events by the system. ~Alex
-void breadbox_publish(breadbox_t *engine, breadbox_message_t *msg);
+void breadbox_publish(breadbox_t *engine, breadbox_message_t msg);
 
 // This function is used by the game itself to let the platform know that we're
 // done and everything can be shut down. ~Alex
@@ -264,7 +255,7 @@ void breadbox_quit();
 
 // Subscribes to a specific message type so the update function is fired when
 // the event is received.
-void breadbox_subscribe(breadbox_subscriptions_t *subs, breadbox_message_type_t type);
+void breadbox_subscribe(breadbox_subscriptions_t *subs, breadbox_message_t type);
 
 // Initializes engine subscriptions
 void breadbox_subscription_init(breadbox_subscriptions_t *subs);
@@ -273,7 +264,7 @@ void breadbox_subscription_init(breadbox_subscriptions_t *subs);
 // be called by the subscription module or messages might not be routed
 // properly. Unless this is called from the subscription service, you should
 // probably be using breadbox_publish instead. ~Alex
-void breadbox_update(breadbox_t *engine, breadbox_message_t *msg);
+void breadbox_update(breadbox_t *engine, breadbox_message_t msg);
 
 // Prints a warning message to the log
 void breadbox_warning(const char *format, ...);
