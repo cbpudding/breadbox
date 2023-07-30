@@ -6,8 +6,8 @@ enum script_word {
     WORD_CLEARSTACK,
     WORD_DIVIDE,
     WORD_KEY,
-    WORD_MODULO,
     WORD_MULTIPLY,
+    WORD_NEGATE,
     WORD_SUBTRACT,
     WORD_TRIGGER,
 };
@@ -25,7 +25,7 @@ struct script_symbol {
     } data;
 };
 
-int input_update(breadbox_list_t *program, breadbox_subscriptions_t *subs) {
+int input_update(breadbox_list_t *program, breadbox_t *engine) {
     breadbox_list_node_t *current;
     breadbox_list_iter_t program_iter;
     float stack[1024];
@@ -37,7 +37,7 @@ int input_update(breadbox_list_t *program, breadbox_subscriptions_t *subs) {
         if(symbol->type == SYMBOL_NUMBER) {
             stack[top++] = symbol->data.number;
             if(top >= 1024) {
-                breadbox_warning_internal(BBLOG_SYSTEM, "Stack overflow in the input script! Aborting script!");
+                breadbox_error_internal(BBLOG_SYSTEM, "input_update: Stack overflow in script! Aborting!");
                 return 1;
             }
         // In the world of Forth, everything is a word or a number. So if we're
@@ -46,17 +46,86 @@ int input_update(breadbox_list_t *program, breadbox_subscriptions_t *subs) {
         } else {
             switch(symbol->data.word) {
                 case WORD_ADD:
+                    if(top >= 2) {
+                        stack[top - 2] += stack[top - 1];
+                        top--;
+                    } else {
+                        breadbox_error_internal(BBLOG_SYSTEM, "input_update: Stack underflow in script! Aborting!");
+                        return 1;
+                    }
+                    break;
                 case WORD_AXIS:
+                    if(top >= 2) {
+                        if((int)stack[top - 1] > 31 || (int)stack[top - 1] < 0) {
+                            breadbox_warning_internal(BBLOG_SYSTEM, "input_update: Unknown axis %d. Ignoring.", (int)stack[top - 1]);
+                        } else {
+                            engine->subscriptions.axes[(int)stack[top - 1]] = stack[top - 2];
+                            breadbox_publish(engine, BBMSG_AXIS0 + (int)stack[top - 1]);
+                        }
+                        top -= 2;
+                    } else {
+                        breadbox_error_internal(BBLOG_SYSTEM, "input_update: Stack underflow in script! Aborting!");
+                        return 1;
+                    }
                     break;
                 case WORD_CLEARSTACK:
                     top = 0;
                     break;
                 case WORD_DIVIDE:
+                    if(top >= 2) {
+                        stack[top - 2] /= stack[top - 1];
+                        top--;
+                    } else {
+                        breadbox_error_internal(BBLOG_SYSTEM, "input_update: Stack underflow in script! Aborting!");
+                        return 1;
+                    }
+                    break;
                 case WORD_KEY:
-                case WORD_MODULO:
+                    if(top >= 1) {
+                        // TODO: How should we poll the current state of a key? ~Alex
+                    } else {
+                        breadbox_error_internal(BBLOG_SYSTEM, "input_update: Stack underflow in script! Aborting!");
+                        return 1;
+                    }
+                    break;
                 case WORD_MULTIPLY:
+                    if(top >= 2) {
+                        stack[top - 2] *= stack[top - 1];
+                        top--;
+                    } else {
+                        breadbox_error_internal(BBLOG_SYSTEM, "input_update: Stack underflow in script! Aborting!");
+                        return 1;
+                    }
+                    break;
+                case WORD_NEGATE:
+                    if(top >= 1) {
+                        stack[top - 1] = -stack[top - 1];
+                    } else {
+                        breadbox_error_internal(BBLOG_SYSTEM, "input_update: Stack underflow in script! Aborting!");
+                        return 1;
+                    }
+                    break;
                 case WORD_SUBTRACT:
+                    if(top >= 2) {
+                        stack[top - 2] -= stack[top - 1];
+                        top--;
+                    } else {
+                        breadbox_error_internal(BBLOG_SYSTEM, "input_update: Stack underflow in script! Aborting!");
+                        return 1;
+                    }
+                    break;
                 case WORD_TRIGGER:
+                    if(top >= 2) {
+                        if((int)stack[top - 1] > 31 || (int)stack[top - 1] < 0) {
+                            breadbox_warning_internal(BBLOG_SYSTEM, "input_update: Unknown trigger %d. Ignoring.", (int)stack[top - 1]);
+                        } else if((int)stack[top - 2]) {
+                            breadbox_publish(engine, BBMSG_TRIGGER0 + (int)stack[top - 1]);
+                        }
+                        top -= 2;
+                    } else {
+                        breadbox_error_internal(BBLOG_SYSTEM, "input_update: Stack underflow in script! Aborting!");
+                        return 1;
+                    }
                     break;
             }
         }
