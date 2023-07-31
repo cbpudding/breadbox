@@ -206,10 +206,10 @@ int main(void) {
         XCloseDisplay(DISPLAY);
         return 1;
     }
-    // Temporary input handling stuff. Will be replaced with more robust code
-    // later. ~Alex
-    input_script = fopen("sandbox/default.fth", "r");
-    breadbox_list_init(&INPUT_PROGRAM);
+    if(!(input_script = fopen("input.fth", "r"))) {
+        breadbox_error_internal(BBLOG_SYSTEM, "main: Failed to read input.fth");
+        breadbox_quit();
+    }
     input_parse(&INPUT_PROGRAM, input_script);
     fclose(input_script);
     // XSelectInput needs to happen after glXCreateContext because OpenGL fails

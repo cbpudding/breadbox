@@ -63,6 +63,7 @@ int input_parse(breadbox_list_t *program, FILE *script) {
     int found;
     struct script_symbol *symbol;
     char *word;
+    breadbox_list_init(program);
     while(fgets(buffer, BUFSIZ, script)) {
         word = strtok(buffer, " \n");
         while(word) {
