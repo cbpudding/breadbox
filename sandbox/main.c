@@ -12,6 +12,9 @@ void breadbox_cleanup(breadbox_t *engine) {
 }
 
 void breadbox_init(breadbox_t *engine) {
+    breadbox_subscribe(&engine->subscriptions, BBMSG_AXIS0);
+    breadbox_subscribe(&engine->subscriptions, BBMSG_AXIS1);
+    breadbox_subscribe(&engine->subscriptions, BBMSG_AXIS2);
     breadbox_matrix_identity((float *) &VIEW);
     engine->model.view = &VIEW;
     breadbox_subscribe(&engine->subscriptions, BBMSG_TICK);
@@ -54,5 +57,17 @@ void breadbox_init(breadbox_t *engine) {
 }
 
 void breadbox_update(breadbox_t *engine, breadbox_message_t msg) {
-    // ...
+    switch(msg) {
+        case BBMSG_AXIS0:
+            breadbox_debug("BBMSG_AXIS0: %f", engine->subscriptions.axes[0]);
+            break;
+        case BBMSG_AXIS1:
+            breadbox_debug("BBMSG_AXIS1: %f", engine->subscriptions.axes[1]);
+            break;
+        case BBMSG_AXIS2:
+            breadbox_debug("BBMSG_AXIS2: %f", engine->subscriptions.axes[2]);
+            break;
+        default:
+            break;
+    }
 }

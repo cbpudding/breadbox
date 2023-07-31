@@ -68,6 +68,8 @@ float get_subtick();
 
 // Input interpreter functions
 void input_free(breadbox_list_t *program);
+void input_key_press(int id);
+void input_key_release(int id);
 int input_parse(breadbox_list_t *program, FILE *script);
 int input_update(breadbox_list_t *program, breadbox_t *engine);
 
@@ -276,6 +278,8 @@ int main(void) {
                     }
                     msg = BBMSG_TICK;
                     breadbox_publish(&ENGINE, msg);
+                    // Is this the best place for this? ~Alex
+                    input_update(&INPUT_PROGRAM, &ENGINE);
                 }
             }
         }
@@ -314,10 +318,10 @@ int main(void) {
                     ALIVE = 0;
                     break;
                 case KeyPress:
-                    breadbox_debug_internal(BBLOG_SYSTEM, "KEY: +%u", event.xkey.keycode);
+                    input_key_press(event.xkey.keycode);
                     break;
                 case KeyRelease:
-                    breadbox_debug_internal(BBLOG_SYSTEM, "KEY: -%u", event.xkey.keycode);
+                    input_key_release(event.xkey.keycode);
                     break;
                 default:
                     break;

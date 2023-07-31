@@ -48,6 +48,9 @@ const struct script_word_pair script_lut[] = {
 
 #define SCRIPT_LUT_LENGTH (int)(sizeof(script_lut) / sizeof(struct script_word_pair))
 
+// A 256 bit buffer is *hopefully* enough to handle all the keys. ~Alex
+uint32_t KEYSTATES[8];
+
 void input_free(breadbox_list_t *program) {
     breadbox_list_node_t *node;
     breadbox_list_iter_t program_iter;
@@ -56,6 +59,22 @@ void input_free(breadbox_list_t *program) {
         free(node->data);
     }
     breadbox_list_free(program);
+}
+
+void input_key_press(int id) {
+    if(id <= 255) {
+        KEYSTATES[id / 32] |= 1 << (id % 32);
+    } else {
+        breadbox_warning_internal(BBLOG_SYSTEM, "input_key_press: Unexpected ID %u pressed. Ignoring.", id);
+    }
+}
+
+void input_key_release(int id) {
+    if(id <= 255) {
+        KEYSTATES[id / 32] &= ~(1 << (id % 32));
+    } else {
+        breadbox_warning_internal(BBLOG_SYSTEM, "input_key_release: Unexpected ID %u released. Ignoring.", id);
+    }
 }
 
 int input_parse(breadbox_list_t *program, FILE *script) {
@@ -110,6 +129,7 @@ int input_update(breadbox_list_t *program, breadbox_t *engine) {
     breadbox_list_iter_t program_iter;
     float stack[1024];
     struct script_symbol *symbol;
+    int temp;
     int top = 0;
     breadbox_list_iter(program, &program_iter);
     while((current = breadbox_list_next(&program_iter))) {
@@ -139,8 +159,10 @@ int input_update(breadbox_list_t *program, breadbox_t *engine) {
                         if((int)stack[top - 1] > 31 || (int)stack[top - 1] < 0) {
                             breadbox_warning_internal(BBLOG_SYSTEM, "input_update: Unknown axis %d. Ignoring.", (int)stack[top - 1]);
                         } else {
-                            engine->subscriptions.axes[(int)stack[top - 1]] = stack[top - 2];
-                            breadbox_publish(engine, BBMSG_AXIS0 + (int)stack[top - 1]);
+                            if(engine->subscriptions.axes[(int)stack[top - 1]] != stack[top - 2]) {
+                                engine->subscriptions.axes[(int)stack[top - 1]] = stack[top - 2];
+                                breadbox_publish(engine, BBMSG_AXIS0 + (int)stack[top - 1]);
+                            }
                         }
                         top -= 2;
                     } else {
@@ -162,8 +184,13 @@ int input_update(breadbox_list_t *program, breadbox_t *engine) {
                     break;
                 case WORD_KEY:
                     if(top >= 1) {
-                        // TODO: How should we poll the current state of a key? ~Alex
-                        stack[top - 1] = 0.0;
+                        if(stack[top - 1] > 255 || stack[top - 1] < 0) {
+                            breadbox_error_internal(BBLOG_SYSTEM, "input_update: Unknown key %f!", stack[top - 1]);
+                            return 1;
+                        } else {
+                            temp = (int)stack[top - 1];
+                            stack[top - 1] = (float)((KEYSTATES[temp / 32] & (1 << (temp % 32))) != 0);
+                        }
                     } else {
                         breadbox_error_internal(BBLOG_SYSTEM, "input_update: Stack underflow in script! Aborting!");
                         return 1;
