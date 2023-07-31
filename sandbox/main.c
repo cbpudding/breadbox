@@ -67,6 +67,11 @@ void breadbox_update(breadbox_t *engine, breadbox_message_t msg) {
         case BBMSG_AXIS2:
             breadbox_debug("BBMSG_AXIS2: %f", engine->subscriptions.axes[2]);
             break;
+        case BBMSG_TICK:
+            VIEW[3] += engine->subscriptions.axes[0] * 0.05;
+            VIEW[7] += engine->subscriptions.axes[1] * 0.05;
+            VIEW[11] += engine->subscriptions.axes[2] * 0.05;
+            break;
         default:
             break;
     }
