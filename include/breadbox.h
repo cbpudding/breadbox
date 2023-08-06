@@ -154,8 +154,6 @@ typedef enum {
 typedef struct {
     // List of all the props(breadbox_prop_t) in the game
     breadbox_list_t props;
-    // Current game tick
-    int tick;
     // The view matrix
     breadbox_matrix_t *view;
 } breadbox_model_t;
@@ -163,9 +161,15 @@ typedef struct {
 typedef struct {
     // Configurable input axes
     float axes[32];
+    // The height of the viewport
+    int height;
     // Determine which events fire the update function
     // There's probably a better way to declare a 128-bit integer... ~Alex
     uint32_t mask[4];
+    // Current game tick
+    int tick;
+    // The width of the viewport
+    int width;
 } breadbox_subscriptions_t;
 
 typedef struct {

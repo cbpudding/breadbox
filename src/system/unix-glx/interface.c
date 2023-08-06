@@ -161,7 +161,6 @@ int main(void) {
     }
     breadbox_model_init(&ENGINE.model);
     breadbox_subscription_init(&ENGINE.subscriptions);
-    breadbox_init(&ENGINE);
     DISPLAY = XOpenDisplay(NULL);
     if(!DISPLAY) {
         breadbox_error_internal(BBLOG_SYSTEM, "main: Unable to connect to X server!");
@@ -219,10 +218,15 @@ int main(void) {
     XSelectInput(DISPLAY, WINDOW, EVENT_MASK);
     glXMakeCurrent(DISPLAY, WINDOW, CONTEXT);
     glEnable(GL_DEPTH_TEST);
-    // NOTE: If the window ever gets resized, then we'll need to run these two
+    // NOTE: If the window ever gets resized, then we'll need to run these
     // again. ~Alex
     XGetWindowAttributes(DISPLAY, WINDOW, &winattr);
     glViewport(0, 0, winattr.width, winattr.height);
+    ENGINE.subscriptions.height = winattr.height;
+    ENGINE.subscriptions.width = winattr.width;
+    // Wait until everything else has been initialized before calling the game!
+    // ~Alex
+    breadbox_init(&ENGINE);
     // We're putting epoch initialization here to make the difference between
     // the epoch and the first timestamp as little as possible so it doesn't
     // complaining about missing ticks when the engine first starts. ~Alex
@@ -256,8 +260,8 @@ int main(void) {
                 now.tv_nsec -= EPOCH.tv_nsec;
             }
             expected_tick = (now.tv_sec * BREADBOX_TICKRATE) + (now.tv_nsec / NSEC_PER_TICK);
-            if(expected_tick > ENGINE.model.tick) {
-                if(!++ENGINE.model.tick) {
+            if(expected_tick > ENGINE.subscriptions.tick) {
+                if(!++ENGINE.subscriptions.tick) {
                     // If anybody is crazy enough to run the engine for this long,
                     // let me know about it. They're my kind of crazy. ~Alex
                     breadbox_error_internal(
@@ -269,11 +273,11 @@ int main(void) {
                     ALIVE = 0;
                     break;
                 } else {
-                    if(expected_tick > ENGINE.model.tick) {
+                    if(expected_tick > ENGINE.subscriptions.tick) {
                         breadbox_warning_internal(
                             BBLOG_SYSTEM,
                             "main: Running %u ticks behind! What's going on?\n",
-                            expected_tick - ENGINE.model.tick
+                            expected_tick - ENGINE.subscriptions.tick
                         );
                     }
                     msg = BBMSG_TICK;
@@ -313,6 +317,8 @@ int main(void) {
                     break;
                 case ConfigureNotify:
                     glViewport(0, 0, event.xconfigure.width, event.xconfigure.height);
+                    ENGINE.subscriptions.height = event.xconfigure.height;
+                    ENGINE.subscriptions.width = event.xconfigure.width;
                     break;
                 case DestroyNotify:
                     ALIVE = 0;

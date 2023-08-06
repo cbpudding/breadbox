@@ -13,10 +13,11 @@ void breadbox_cleanup(breadbox_t *engine) {
 }
 
 void breadbox_init(breadbox_t *engine) {
+    float aspect = engine->subscriptions.width / engine->subscriptions.height;
     breadbox_subscribe(&engine->subscriptions, BBMSG_AXIS0);
     breadbox_subscribe(&engine->subscriptions, BBMSG_AXIS1);
     breadbox_subscribe(&engine->subscriptions, BBMSG_AXIS2);
-    breadbox_matrix_perspective((float *) &VIEW, 1.0, 90.0, 0.125, 512.0);
+    breadbox_matrix_perspective((float *) &VIEW, aspect, 90.0, 0.125, 512.0);
     engine->model.view = &VIEW;
     breadbox_subscribe(&engine->subscriptions, BBMSG_TICK);
     breadbox_geometry_vertex(&TEST_VERTICES[0], -0.5, -0.5, -0.5);
@@ -58,6 +59,7 @@ void breadbox_init(breadbox_t *engine) {
 }
 
 void breadbox_update(breadbox_t *engine, breadbox_message_t msg) {
+    float aspect = engine->subscriptions.width / engine->subscriptions.height;
     breadbox_matrix_t transform;
     switch(msg) {
         case BBMSG_AXIS0:
@@ -77,7 +79,7 @@ void breadbox_update(breadbox_t *engine, breadbox_message_t msg) {
             transform[3] = CAMERA.x;
             transform[7] = CAMERA.y;
             transform[11] = CAMERA.z;
-            breadbox_matrix_perspective((float *) &VIEW, 1.0, 90.0, 0.125, 512.0);
+            breadbox_matrix_perspective((float *) &VIEW, aspect, 90.0, 0.125, 512.0);
             breadbox_matrix_multiply((float *) &VIEW, (float *) &VIEW, (float *) &transform);
             break;
         default:
