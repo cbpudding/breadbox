@@ -23,6 +23,18 @@ void breadbox_matrix_multiply(breadbox_matrix_t result, breadbox_matrix_t a, bre
     }
 }
 
+void breadbox_matrix_order(breadbox_matrix_t result, breadbox_matrix_t victim) {
+    // Again, this matrix is here just in case the input and output are the same
+    // matrix. ~Alex
+    breadbox_matrix_t temp;
+    for(int i = 0; i < 16; i++) {
+        temp[i] = victim[((i & 12) >> 2) | ((i & 3) << 2)];
+    }
+    for(int i = 0; i < 16; i++) {
+        result[i] = temp[i];
+    }
+}
+
 void breadbox_matrix_perspective(breadbox_matrix_t matrix, float aspect, float fov, float near, float far) {
     float f = 1.0 / tanf(fov / 2.0);
     matrix[0] = f / aspect;

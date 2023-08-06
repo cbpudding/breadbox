@@ -18,12 +18,14 @@ void view(breadbox_model_t *model) {
     breadbox_material_t *material;
     breadbox_prop_t *prop;
     breadbox_list_iter_t props;
+    breadbox_matrix_t temp;
     breadbox_list_node_t *victim;
     breadbox_list_iter(&model->props, &props);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glMatrixMode(GL_PROJECTION);
     if(model->view) {
-        glLoadMatrixf((GLfloat *)model->view);
+        breadbox_matrix_order(temp, (float *) model->view);
+        glLoadMatrixf((GLfloat *) temp);
     } else {
         glLoadIdentity();
     }
@@ -31,7 +33,8 @@ void view(breadbox_model_t *model) {
     while((victim = breadbox_list_next(&props))) {
         prop = (breadbox_prop_t *)victim->data;
         material = prop->material;
-        glLoadMatrixf((GLfloat *) &prop->matrix);
+        breadbox_matrix_order(temp, (float *) &prop->matrix);
+        glLoadMatrixf((GLfloat *) temp);
         glBegin(GL_TRIANGLES);
         glColor3f(material->color.r, material->color.g, material->color.b);
         breadbox_list_iter(&prop->geometry->faces, &faces);
