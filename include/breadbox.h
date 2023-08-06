@@ -240,6 +240,9 @@ void breadbox_matrix_identity(breadbox_matrix_t matrix);
 // Multiplies a matrix by another matrix
 void breadbox_matrix_multiply(breadbox_matrix_t result, breadbox_matrix_t a, breadbox_matrix_t b);
 
+// Calculates a perspective matrix
+void breadbox_matrix_perspective(breadbox_matrix_t matrix, float aspect, float fov, float near, float far);
+
 // Frees the model from memory
 void breadbox_model_free(breadbox_model_t *model);
 

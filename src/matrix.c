@@ -1,3 +1,5 @@
+#include <math.h>
+
 #include "breadbox.h"
 
 void breadbox_matrix_identity(breadbox_matrix_t matrix) {
@@ -19,4 +21,24 @@ void breadbox_matrix_multiply(breadbox_matrix_t result, breadbox_matrix_t a, bre
     for(int i = 0; i < 16; i++) {
         result[i] = victim[i];
     }
+}
+
+void breadbox_matrix_perspective(breadbox_matrix_t matrix, float aspect, float fov, float near, float far) {
+    float f = 1.0 / tanf(fov / 2.0);
+    matrix[0] = f / aspect;
+    matrix[1] = 0.0;
+    matrix[2] = 0.0;
+    matrix[3] = 0.0;
+    matrix[4] = 0.0;
+    matrix[5] = f;
+    matrix[6] = 0.0;
+    matrix[7] = 0.0;
+    matrix[8] = 0.0;
+    matrix[9] = 0.0;
+    matrix[10] = (far + near) / (near - far);
+    matrix[11] = (2.0 * far * near) / (near - far);
+    matrix[12] = 0.0;
+    matrix[13] = 0.0;
+    matrix[14] = 1.0;
+    matrix[15] = 0.0;
 }

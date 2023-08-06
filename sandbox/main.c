@@ -1,5 +1,6 @@
 #include "breadbox.h"
 
+breadbox_vertex_t CAMERA;
 breadbox_vertex_t TEST_VERTICES[8];
 breadbox_face_t TEST_FACES[12];
 breadbox_geometry_t TEST_GEOMETRY;
@@ -15,7 +16,7 @@ void breadbox_init(breadbox_t *engine) {
     breadbox_subscribe(&engine->subscriptions, BBMSG_AXIS0);
     breadbox_subscribe(&engine->subscriptions, BBMSG_AXIS1);
     breadbox_subscribe(&engine->subscriptions, BBMSG_AXIS2);
-    breadbox_matrix_identity((float *) &VIEW);
+    breadbox_matrix_perspective((float *) &VIEW, 1.0, 90.0, 0.125, 512.0);
     engine->model.view = &VIEW;
     breadbox_subscribe(&engine->subscriptions, BBMSG_TICK);
     breadbox_geometry_vertex(&TEST_VERTICES[0], -0.5, -0.5, -0.5);
@@ -57,6 +58,7 @@ void breadbox_init(breadbox_t *engine) {
 }
 
 void breadbox_update(breadbox_t *engine, breadbox_message_t msg) {
+    breadbox_matrix_t transform;
     switch(msg) {
         case BBMSG_AXIS0:
             breadbox_debug("BBMSG_AXIS0: %f", engine->subscriptions.axes[0]);
@@ -68,9 +70,15 @@ void breadbox_update(breadbox_t *engine, breadbox_message_t msg) {
             breadbox_debug("BBMSG_AXIS2: %f", engine->subscriptions.axes[2]);
             break;
         case BBMSG_TICK:
-            VIEW[3] += engine->subscriptions.axes[0] * 0.05;
-            VIEW[7] += engine->subscriptions.axes[1] * 0.05;
-            VIEW[11] += engine->subscriptions.axes[2] * 0.05;
+            CAMERA.x += engine->subscriptions.axes[0] * 0.05;
+            CAMERA.y += engine->subscriptions.axes[1] * 0.05;
+            CAMERA.z += engine->subscriptions.axes[2] * 0.05;
+            breadbox_matrix_identity((float *) &transform);
+            transform[3] = CAMERA.x;
+            transform[7] = CAMERA.y;
+            transform[11] = CAMERA.z;
+            breadbox_matrix_perspective((float *) &VIEW, 1.0, 90.0, 0.125, 512.0);
+            breadbox_matrix_multiply((float *) &VIEW, (float *) &VIEW, (float *) &transform);
             break;
         default:
             break;
