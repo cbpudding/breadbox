@@ -52,11 +52,8 @@ const struct script_word_pair script_lut[] = {
 uint32_t KEYSTATES[8];
 
 void input_free(breadbox_list_t *program) {
-    breadbox_list_node_t *node;
-    breadbox_list_iter_t program_iter;
-    breadbox_list_iter(program, &program_iter);
-    while((node = breadbox_list_next(&program_iter))) {
-        free(node->data);
+    for(int i = 0; i < program->size; i++) {
+        free(program->data[i]);
     }
     breadbox_list_free(program);
 }
@@ -125,15 +122,12 @@ int input_parse(breadbox_list_t *program, FILE *script) {
 }
 
 int input_update(breadbox_list_t *program, breadbox_t *engine) {
-    breadbox_list_node_t *current;
-    breadbox_list_iter_t program_iter;
     float stack[1024];
     struct script_symbol *symbol;
     int temp;
     int top = 0;
-    breadbox_list_iter(program, &program_iter);
-    while((current = breadbox_list_next(&program_iter))) {
-        symbol = (struct script_symbol *) current->data;
+    for(int i = 0; i < program->size; i++) {
+        symbol = (struct script_symbol *) program->data[i];
         if(symbol->type == SYMBOL_NUMBER) {
             stack[top++] = symbol->data.number;
             if(top >= 1024) {
