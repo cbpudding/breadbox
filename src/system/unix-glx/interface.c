@@ -67,7 +67,10 @@ Window WINDOW;
 float get_subtick();
 
 // Input interpreter functions
+void input_button_press(int id);
+void input_button_release(int id);
 void input_free(breadbox_list_t *program);
+void input_init();
 void input_key_press(int id);
 void input_key_release(int id);
 int input_parse(breadbox_list_t *program, FILE *script);
@@ -212,6 +215,7 @@ int main(void) {
         breadbox_error_internal(BBLOG_SYSTEM, "main: Failed to read input.fth");
         breadbox_quit();
     }
+    input_init();
     input_parse(&INPUT_PROGRAM, input_script);
     fclose(input_script);
     // XSelectInput needs to happen after glXCreateContext because OpenGL fails
@@ -300,10 +304,12 @@ int main(void) {
         if(XCheckWindowEvent(DISPLAY, WINDOW, EVENT_MASK, &event)) {
             switch(event.type) {
                 case ButtonPress:
-                    breadbox_debug_internal(BBLOG_SYSTEM, "BUTTON: +%u", event.xbutton.button);
+                    input_button_press(event.xbutton.button);
+                    input_changed = 1;
                     break;
                 case ButtonRelease:
-                    breadbox_debug_internal(BBLOG_SYSTEM, "BUTTON: -%u", event.xbutton.button);
+                    input_button_release(event.xbutton.button);
+                    input_changed = 1;
                     break;
                 // Some window managers aren't nice and decide to simply unmap
                 // windows rather than destroy them. In those cases, we'll

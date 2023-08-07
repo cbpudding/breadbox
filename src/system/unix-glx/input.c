@@ -7,6 +7,7 @@
 enum script_word {
     WORD_ADD,
     WORD_AXIS,
+    WORD_BUTTON,
     WORD_CLEARSTACK,
     WORD_DIVIDE,
     WORD_KEY,
@@ -37,6 +38,7 @@ struct script_word_pair {
 const struct script_word_pair script_lut[] = {
     {"+", WORD_ADD},
     {"axis", WORD_AXIS},
+    {"button", WORD_BUTTON},
     {"clearstack", WORD_CLEARSTACK},
     {"/", WORD_DIVIDE},
     {"key", WORD_KEY},
@@ -48,14 +50,41 @@ const struct script_word_pair script_lut[] = {
 
 #define SCRIPT_LUT_LENGTH (int)(sizeof(script_lut) / sizeof(struct script_word_pair))
 
+// If you have more than 32 buttons on your mouse, you are either a hardcore RPG
+// player, or you need to seek mental help. ~Alex
+uint32_t BUTTONS;
+
 // A 256 bit buffer is *hopefully* enough to handle all the keys. ~Alex
 uint32_t KEYSTATES[8];
+
+void input_button_press(int id) {
+    if(id <= 31) {
+        BUTTONS |= 1 << id;
+    } else {
+        breadbox_warning_internal(BBLOG_SYSTEM, "input_button_press: Unexpected ID %u pressed. Ignoring.", id);
+    }
+}
+
+void input_button_release(int id) {
+    if(id <= 31) {
+        BUTTONS &= ~(1 << id);
+    } else {
+        breadbox_warning_internal(BBLOG_SYSTEM, "input_button_release: Unexpected ID %u released. Ignoring.", id);
+    }
+}
 
 void input_free(breadbox_list_t *program) {
     for(int i = 0; i < program->size; i++) {
         free(program->data[i]);
     }
     breadbox_list_free(program);
+}
+
+void input_init() {
+    BUTTONS = 0;
+    for(int i = 0; i < 8; i++) {
+        KEYSTATES[i] = 0;
+    }
 }
 
 void input_key_press(int id) {
@@ -159,6 +188,20 @@ int input_update(breadbox_list_t *program, breadbox_t *engine) {
                             }
                         }
                         top -= 2;
+                    } else {
+                        breadbox_error_internal(BBLOG_SYSTEM, "input_update: Stack underflow in script! Aborting!");
+                        return 1;
+                    }
+                    break;
+                case WORD_BUTTON:
+                    if(top >= 1) {
+                        if(stack[top - 1] > 31 || stack[top - 1] < 0) {
+                            breadbox_error_internal(BBLOG_SYSTEM, "input_update: Unknown button %f!", stack[top - 1]);
+                            return 1;
+                        } else {
+                            temp = (int)stack[top - 1];
+                            stack[top - 1] = (float)((BUTTONS & (1 << temp)) != 0);
+                        }
                     } else {
                         breadbox_error_internal(BBLOG_SYSTEM, "input_update: Stack underflow in script! Aborting!");
                         return 1;
