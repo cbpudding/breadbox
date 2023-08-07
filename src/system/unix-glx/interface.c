@@ -144,6 +144,7 @@ void interrupt(int sig) {
 int main(void) {
     XEvent event;
     int expected_tick;
+    int input_changed = 0;
     FILE *input_script;
     breadbox_message_t msg;
     struct timespec now;
@@ -283,7 +284,10 @@ int main(void) {
                     msg = BBMSG_TICK;
                     breadbox_publish(&ENGINE, msg);
                     // Is this the best place for this? ~Alex
-                    input_update(&INPUT_PROGRAM, &ENGINE);
+                    if(input_changed) {
+                        input_update(&INPUT_PROGRAM, &ENGINE);
+                        input_changed = 0;
+                    }
                 }
             }
         }
@@ -325,9 +329,11 @@ int main(void) {
                     break;
                 case KeyPress:
                     input_key_press(event.xkey.keycode);
+                    input_changed = 1;
                     break;
                 case KeyRelease:
                     input_key_release(event.xkey.keycode);
+                    input_changed = 1;
                     break;
                 default:
                     break;
