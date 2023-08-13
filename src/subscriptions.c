@@ -17,10 +17,10 @@ void breadbox_subscription_init(breadbox_subscriptions_t *subs) {
     for(int i = 0; i < 32; i++) {
         subs->axes[i] = 0.0;
     }
-    subs->height = 0;
+    subs->height = 1;
     for(int i = 0; i < 4; i++) {
         subs->mask[i] = 0;
     }
     subs->tick = 0;
-    subs->width = 0;
+    subs->width = 1;
 }

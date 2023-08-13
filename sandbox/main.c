@@ -23,11 +23,11 @@ void breadbox_cleanup(breadbox_t *engine) {
 }
 
 void breadbox_init(breadbox_t *engine) {
-    float aspect = engine->subscriptions.width / engine->subscriptions.height;
+    float aspect = (float)engine->subscriptions.width / (float)engine->subscriptions.height;
     breadbox_subscribe(&engine->subscriptions, BBMSG_AXIS0);
     breadbox_subscribe(&engine->subscriptions, BBMSG_AXIS1);
     breadbox_subscribe(&engine->subscriptions, BBMSG_AXIS2);
-    glm_perspective(90.0, aspect, 0.125, 512.0, VIEW);
+    glm_perspective(90.0, aspect, 0.125, 64.0, VIEW);
     engine->model.view = &VIEW;
     breadbox_subscribe(&engine->subscriptions, BBMSG_TICK);
     breadbox_geometry_face(&TEST_FACES[0], &TEST_VERTICES[4], &TEST_VERTICES[6], &TEST_VERTICES[7]);
@@ -61,7 +61,7 @@ void breadbox_init(breadbox_t *engine) {
 }
 
 void breadbox_update(breadbox_t *engine, breadbox_message_t msg) {
-    float aspect = engine->subscriptions.width / engine->subscriptions.height;
+    float aspect = (float)engine->subscriptions.width / (float)engine->subscriptions.height;
     mat4 transform;
     switch(msg) {
         case BBMSG_AXIS0:
@@ -78,11 +78,11 @@ void breadbox_update(breadbox_t *engine, breadbox_message_t msg) {
             CAMERA[1] += engine->subscriptions.axes[1] * 0.05;
             CAMERA[2] += engine->subscriptions.axes[2] * 0.05;
             glm_mat4_identity(transform);
-            transform[0][3] = CAMERA[0];
-            transform[1][3] = CAMERA[1];
-            transform[2][3] = CAMERA[2];
-            glm_perspective(90.0, aspect, 0.125, 512.0, VIEW);
-            glm_mat4_mul(VIEW, transform, VIEW);
+            transform[3][0] = CAMERA[0];
+            transform[3][1] = CAMERA[1];
+            transform[3][2] = CAMERA[2];
+            glm_perspective(90.0, aspect, 0.125, 64.0, VIEW);
+            glm_mat4_mul(transform, VIEW, VIEW);
             break;
         default:
             break;

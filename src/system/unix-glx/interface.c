@@ -279,11 +279,15 @@ int main(void) {
                     break;
                 } else {
                     if(expected_tick > ENGINE.subscriptions.tick) {
-                        breadbox_warning_internal(
-                            BBLOG_SYSTEM,
-                            "main: Running %u ticks behind! What's going on?\n",
-                            expected_tick - ENGINE.subscriptions.tick
-                        );
+                        if(expected_tick - ENGINE.subscriptions.tick == 1) {
+                            breadbox_warning_internal(BBLOG_SYSTEM, "main: Running 1 tick behind! What's going on?");
+                        } else {
+                            breadbox_warning_internal(
+                                BBLOG_SYSTEM,
+                                "main: Running %u ticks behind! What's going on?",
+                                expected_tick - ENGINE.subscriptions.tick
+                            );
+                        }
                     }
                     msg = BBMSG_TICK;
                     breadbox_publish(&ENGINE, msg);
