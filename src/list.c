@@ -8,7 +8,7 @@ int breadbox_list_append(breadbox_list_t *list, void *data) {
     void **expanded;
     list->size++;
     if(list->size > list->limit) {
-        expanded = malloc(list->limit * 2);
+        expanded = malloc(list->limit * 2 * sizeof(void *));
         memcpy(expanded, list->data, list->limit * sizeof(void *));
         free(list->data);
         list->data = expanded;
