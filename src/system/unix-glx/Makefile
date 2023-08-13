@@ -5,7 +5,7 @@ BACKEND=unix-glx
 SRCDIR=../..
 OUTDIR=../../../build/$(BACKEND)
 
-$(OUTDIR)/libbreadbox.a: $(OUTDIR)/list.o $(OUTDIR)/log.o $(OUTDIR)/model.o $(OUTDIR)/subscriptions.o $(OUTDIR)/system/input.o $(OUTDIR)/system/interface.o $(OUTDIR)/system/matrix.o $(OUTDIR)/system/view.o
+$(OUTDIR)/libbreadbox.a: $(OUTDIR)/list.o $(OUTDIR)/log.o $(OUTDIR)/model.o $(OUTDIR)/subscriptions.o $(OUTDIR)/system/input.o $(OUTDIR)/system/interface.o $(OUTDIR)/system/view.o
 	$(AR) rcs $@ $^
 
 $(OUTDIR)/system/%.o: $(SRCDIR)/system/$(BACKEND)/%.c

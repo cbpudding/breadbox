@@ -2,6 +2,8 @@
 #include <stdarg.h>
 #include <stdint.h>
 
+#include <cglm/cglm.h>
+
 #ifndef BREADBOX_H
 #define BREADBOX_H
 
@@ -13,20 +15,11 @@ typedef struct {
     int size;
 } breadbox_list_t;
 
-typedef float breadbox_matrix_t[16];
-
 typedef struct {
     float r;
     float g;
     float b;
 } breadbox_color_t;
-
-// Needed by breadbox_face_t
-typedef struct {
-    float x;
-    float y;
-    float z;
-} breadbox_vertex_t;
 
 typedef struct {
     // The base color of the material
@@ -35,10 +28,10 @@ typedef struct {
 
 // Here because it relies on breadbox_vertex_t
 typedef struct {
-    breadbox_vertex_t *a;
-    breadbox_vertex_t *b;
-    breadbox_vertex_t *c;
-    breadbox_vertex_t normal;
+    vec3 *a;
+    vec3 *b;
+    vec3 *c;
+    vec3 normal;
 } breadbox_face_t;
 
 // Here because it relies on breadbox_list_t
@@ -55,7 +48,7 @@ typedef struct {
     // The material of the prop
     breadbox_material_t *material;
     // The model matrix for transforming/rotating/scaling
-    breadbox_matrix_t matrix;
+    mat4 matrix;
 } breadbox_prop_t;
 
 typedef enum {
@@ -146,7 +139,7 @@ typedef struct {
     // List of all the props(breadbox_prop_t) in the game
     breadbox_list_t props;
     // The view matrix
-    breadbox_matrix_t *view;
+    mat4 *view;
 } breadbox_model_t;
 
 typedef struct {
@@ -184,16 +177,13 @@ void breadbox_error(const char *format, ...);
 void breadbox_error_internal(breadbox_log_source_t source, const char *format, ...);
 
 // A convenience function to populate a face
-void breadbox_geometry_face(breadbox_face_t *face, breadbox_vertex_t *a, breadbox_vertex_t *b, breadbox_vertex_t *c);
+void breadbox_geometry_face(breadbox_face_t *face, vec3 *a, vec3 *b, vec3 *c);
 
 // Frees a geometry object
 void breadbox_geometry_free(breadbox_geometry_t *geometry);
 
 // Initializes a geometry object
 void breadbox_geometry_init(breadbox_geometry_t *geometry);
-
-// A convenience function to populate a vertex
-void breadbox_geometry_vertex(breadbox_vertex_t *vertex, float x, float y, float z);
 
 // Prints an informational message to the log
 void breadbox_info(const char *format, ...);
@@ -219,18 +209,6 @@ void breadbox_list_remove(breadbox_list_t *list, int i);
 // Prints a message to the log. It's recommended to use the debug, error, info,
 // and warning functions to preserve your remaining sanity. ~Alex
 void breadbox_log(breadbox_log_source_t source, breadbox_log_level_t level, const char *format, va_list args);
-
-// Loads the identity matrix
-void breadbox_matrix_identity(breadbox_matrix_t matrix);
-
-// Multiplies a matrix by another matrix
-void breadbox_matrix_multiply(breadbox_matrix_t result, breadbox_matrix_t a, breadbox_matrix_t b);
-
-// Flips between column and row major matrices
-void breadbox_matrix_order(breadbox_matrix_t result, breadbox_matrix_t victim);
-
-// Calculates a perspective matrix
-void breadbox_matrix_perspective(breadbox_matrix_t matrix, float aspect, float fov, float near, float far);
 
 // Frees the model from memory
 void breadbox_model_free(breadbox_model_t *model);

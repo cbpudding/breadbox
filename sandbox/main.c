@@ -1,12 +1,22 @@
 #include "breadbox.h"
 
-breadbox_vertex_t CAMERA;
-breadbox_vertex_t TEST_VERTICES[8];
+vec3 TEST_VERTICES[8] = {
+    {-0.5, -0.5, -0.5},
+    {0.5, -0.5, -0.5},
+    {-0.5, 0.5, -0.5},
+    {0.5, 0.5, -0.5},
+    {-0.5, -0.5, 0.5},
+    {0.5, -0.5, 0.5},
+    {-0.5, 0.5, 0.5},
+    {0.5, 0.5, 0.5}
+};
+
+vec3 CAMERA;
 breadbox_face_t TEST_FACES[12];
 breadbox_geometry_t TEST_GEOMETRY;
 breadbox_material_t TEST_MATERIAL;
 breadbox_prop_t TEST;
-breadbox_matrix_t VIEW;
+mat4 VIEW;
 
 void breadbox_cleanup(breadbox_t *engine) {
     breadbox_geometry_free(&TEST_GEOMETRY);
@@ -17,17 +27,9 @@ void breadbox_init(breadbox_t *engine) {
     breadbox_subscribe(&engine->subscriptions, BBMSG_AXIS0);
     breadbox_subscribe(&engine->subscriptions, BBMSG_AXIS1);
     breadbox_subscribe(&engine->subscriptions, BBMSG_AXIS2);
-    breadbox_matrix_perspective((float *) &VIEW, aspect, 90.0, 0.125, 512.0);
+    glm_perspective(90.0, aspect, 0.125, 512.0, VIEW);
     engine->model.view = &VIEW;
     breadbox_subscribe(&engine->subscriptions, BBMSG_TICK);
-    breadbox_geometry_vertex(&TEST_VERTICES[0], -0.5, -0.5, -0.5);
-    breadbox_geometry_vertex(&TEST_VERTICES[1], 0.5, -0.5, -0.5);
-    breadbox_geometry_vertex(&TEST_VERTICES[2], -0.5, 0.5, -0.5);
-    breadbox_geometry_vertex(&TEST_VERTICES[3], 0.5, 0.5, -0.5);
-    breadbox_geometry_vertex(&TEST_VERTICES[4], -0.5, -0.5, 0.5);
-    breadbox_geometry_vertex(&TEST_VERTICES[5], 0.5, -0.5, 0.5);
-    breadbox_geometry_vertex(&TEST_VERTICES[6], -0.5, 0.5, 0.5);
-    breadbox_geometry_vertex(&TEST_VERTICES[7], 0.5, 0.5, 0.5);
     breadbox_geometry_face(&TEST_FACES[0], &TEST_VERTICES[4], &TEST_VERTICES[6], &TEST_VERTICES[7]);
     breadbox_geometry_face(&TEST_FACES[1], &TEST_VERTICES[4], &TEST_VERTICES[7], &TEST_VERTICES[5]);
     breadbox_geometry_face(&TEST_FACES[2], &TEST_VERTICES[5], &TEST_VERTICES[7], &TEST_VERTICES[3]);
@@ -52,7 +54,7 @@ void breadbox_init(breadbox_t *engine) {
     TEST_MATERIAL.color.b = 0.96;
     TEST.geometry = &TEST_GEOMETRY;
     TEST.material = &TEST_MATERIAL;
-    breadbox_matrix_identity((float *) &TEST.matrix);
+    glm_mat4_identity(TEST.matrix);
     breadbox_list_append(&engine->model.props, (void *)&TEST);
     // ...
     breadbox_info("Sandbox started");
@@ -60,7 +62,7 @@ void breadbox_init(breadbox_t *engine) {
 
 void breadbox_update(breadbox_t *engine, breadbox_message_t msg) {
     float aspect = engine->subscriptions.width / engine->subscriptions.height;
-    breadbox_matrix_t transform;
+    mat4 transform;
     switch(msg) {
         case BBMSG_AXIS0:
             breadbox_debug("BBMSG_AXIS0: %f", engine->subscriptions.axes[0]);
@@ -72,15 +74,15 @@ void breadbox_update(breadbox_t *engine, breadbox_message_t msg) {
             breadbox_debug("BBMSG_AXIS2: %f", engine->subscriptions.axes[2]);
             break;
         case BBMSG_TICK:
-            CAMERA.x += engine->subscriptions.axes[0] * 0.05;
-            CAMERA.y += engine->subscriptions.axes[1] * 0.05;
-            CAMERA.z += engine->subscriptions.axes[2] * 0.05;
-            breadbox_matrix_identity((float *) &transform);
-            transform[3] = CAMERA.x;
-            transform[7] = CAMERA.y;
-            transform[11] = CAMERA.z;
-            breadbox_matrix_perspective((float *) &VIEW, aspect, 90.0, 0.125, 512.0);
-            breadbox_matrix_multiply((float *) &VIEW, (float *) &VIEW, (float *) &transform);
+            CAMERA[0] += engine->subscriptions.axes[0] * 0.05;
+            CAMERA[1] += engine->subscriptions.axes[1] * 0.05;
+            CAMERA[2] += engine->subscriptions.axes[2] * 0.05;
+            glm_mat4_identity(transform);
+            transform[0][3] = CAMERA[0];
+            transform[1][3] = CAMERA[1];
+            transform[2][3] = CAMERA[2];
+            glm_perspective(90.0, aspect, 0.125, 512.0, VIEW);
+            glm_mat4_mul(VIEW, transform, VIEW);
             break;
         default:
             break;
