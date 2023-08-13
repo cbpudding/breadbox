@@ -24,9 +24,6 @@ void breadbox_cleanup(breadbox_t *engine) {
 
 void breadbox_init(breadbox_t *engine) {
     float aspect = (float)engine->subscriptions.width / (float)engine->subscriptions.height;
-    breadbox_subscribe(&engine->subscriptions, BBMSG_AXIS0);
-    breadbox_subscribe(&engine->subscriptions, BBMSG_AXIS1);
-    breadbox_subscribe(&engine->subscriptions, BBMSG_AXIS2);
     glm_perspective(90.0, aspect, 0.125, 64.0, VIEW);
     engine->model.view = &VIEW;
     breadbox_subscribe(&engine->subscriptions, BBMSG_TICK);
@@ -64,15 +61,6 @@ void breadbox_update(breadbox_t *engine, breadbox_message_t msg) {
     float aspect = (float)engine->subscriptions.width / (float)engine->subscriptions.height;
     mat4 transform;
     switch(msg) {
-        case BBMSG_AXIS0:
-            breadbox_debug("BBMSG_AXIS0: %f", engine->subscriptions.axes[0]);
-            break;
-        case BBMSG_AXIS1:
-            breadbox_debug("BBMSG_AXIS1: %f", engine->subscriptions.axes[1]);
-            break;
-        case BBMSG_AXIS2:
-            breadbox_debug("BBMSG_AXIS2: %f", engine->subscriptions.axes[2]);
-            break;
         case BBMSG_TICK:
             CAMERA[0] += engine->subscriptions.axes[0] * 0.05;
             CAMERA[1] += engine->subscriptions.axes[1] * 0.05;
@@ -82,7 +70,7 @@ void breadbox_update(breadbox_t *engine, breadbox_message_t msg) {
             transform[3][1] = CAMERA[1];
             transform[3][2] = CAMERA[2];
             glm_perspective(90.0, aspect, 0.125, 64.0, VIEW);
-            glm_mat4_mul(transform, VIEW, VIEW);
+            glm_mat4_mul(VIEW, transform, VIEW);
             break;
         default:
             break;
