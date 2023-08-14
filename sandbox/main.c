@@ -4,16 +4,16 @@ vec3 TEST_NORMALS[5] = {
     {0.0, 1.0, 0.0},
     {1.0, -1.0, 1.0},
     {-1.0, -1.0, 1.0},
-    {1.0, -1.0, -1.0},
-    {-1.0, -1.0, -1.0}
+    {-1.0, -1.0, -1.0},
+    {1.0, -1.0, -1.0}
 };
 
 vec3 TEST_VERTICES[5] = {
     {0.0, 0.5, 0.0},
     {0.5, -0.5, 0.5},
     {-0.5, -0.5, 0.5},
-    {0.5, -0.5, -0.5},
-    {-0.5, -0.5, -0.5}
+    {-0.5, -0.5, -0.5},
+    {0.5, -0.5, -0.5}
 };
 
 breadbox_camera_t CAMERA;
@@ -43,8 +43,6 @@ void breadbox_init(breadbox_t *engine) {
         TEST_FACES[i].na = &TEST_NORMALS[0];
         TEST_FACES[i].b = &TEST_VERTICES[i + 1];
         TEST_FACES[i].nb = &TEST_NORMALS[i + 1];
-        // I guess I did my math wrong because the pyramid isn't exactly...
-        // pyramid-like. Fine for testing anyways. ~Alex
         TEST_FACES[i].c = &TEST_VERTICES[((i + 1) % 4) + 1];
         TEST_FACES[i].nc = &TEST_NORMALS[((i + 1) % 4) + 1];
     }
