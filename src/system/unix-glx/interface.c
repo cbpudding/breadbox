@@ -64,13 +64,13 @@ breadbox_list_t INPUT_PROGRAM;
 Window WINDOW;
 
 // Predefinition for get_subtick here because breadbox_log relies on it. ~Alex
-float get_subtick();
+float get_subtick(void);
 
 // Input interpreter functions
 void input_button_press(int id);
 void input_button_release(int id);
 void input_free(breadbox_list_t *program);
-void input_init();
+void input_init(void);
 void input_key_press(int id);
 void input_key_release(int id);
 int input_parse(breadbox_list_t *program, FILE *script);
@@ -94,7 +94,7 @@ void breadbox_log(
     puts("\x1B[0m");
 }
 
-void breadbox_quit() {
+void breadbox_quit(void) {
     glXMakeCurrent(DISPLAY, None, NULL);
     glXDestroyContext(DISPLAY, CONTEXT);
     // TODO: What if the window hasn't been destroyed yet? ~Alex
@@ -119,7 +119,7 @@ int create_window(XVisualInfo *visinfo) {
     return 0;
 }
 
-float get_subtick() {
+float get_subtick(void) {
     float current = 0.0;
     struct timespec now;
     if(clock_gettime(CLOCK_MONOTONIC, &now)) {

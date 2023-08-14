@@ -10,7 +10,7 @@
 extern Display *DISPLAY;
 extern Window WINDOW;
 
-extern float get_subtick();
+extern float get_subtick(void);
 
 void view(breadbox_model_t *model) {
     breadbox_face_t *face;

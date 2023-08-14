@@ -80,7 +80,7 @@ void input_free(breadbox_list_t *program) {
     breadbox_list_free(program);
 }
 
-void input_init() {
+void input_init(void) {
     BUTTONS = 0;
     for(int i = 0; i < 8; i++) {
         KEYSTATES[i] = 0;
