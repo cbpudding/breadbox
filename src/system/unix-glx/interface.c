@@ -222,8 +222,10 @@ int main(void) {
     // to load otherwise. ~Alex
     XSelectInput(DISPLAY, WINDOW, EVENT_MASK);
     glXMakeCurrent(DISPLAY, WINDOW, CONTEXT);
+    glEnable(GL_CULL_FACE);
+    glFrontFace(GL_CW);
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_LIGHTING);
+    //glEnable(GL_LIGHTING);
     // TEST LIGHT. TO BE REMOVED LATER. ~Alex
     vec4 TEST_LIGHT[4] = {
         {0.0, 0.0, 0.0, 1.0}, // GL_AMBIENT

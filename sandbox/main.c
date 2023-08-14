@@ -48,16 +48,16 @@ void breadbox_init(breadbox_t *engine) {
     }
     TEST_FACES[4].a = &TEST_VERTICES[1];
     TEST_FACES[4].na = &TEST_NORMALS[1];
-    TEST_FACES[4].b = &TEST_VERTICES[2];
-    TEST_FACES[4].nb = &TEST_NORMALS[2];
-    TEST_FACES[4].c = &TEST_VERTICES[4];
-    TEST_FACES[4].nc = &TEST_NORMALS[4];
+    TEST_FACES[4].b = &TEST_VERTICES[3];
+    TEST_FACES[4].nb = &TEST_NORMALS[3];
+    TEST_FACES[4].c = &TEST_VERTICES[2];
+    TEST_FACES[4].nc = &TEST_NORMALS[2];
     TEST_FACES[5].a = &TEST_VERTICES[1];
     TEST_FACES[5].na = &TEST_NORMALS[1];
-    TEST_FACES[5].b = &TEST_VERTICES[3];
-    TEST_FACES[5].nb = &TEST_NORMALS[3];
-    TEST_FACES[5].c = &TEST_VERTICES[4];
-    TEST_FACES[5].nc = &TEST_NORMALS[4];
+    TEST_FACES[5].b = &TEST_VERTICES[4];
+    TEST_FACES[5].nb = &TEST_NORMALS[4];
+    TEST_FACES[5].c = &TEST_VERTICES[3];
+    TEST_FACES[5].nc = &TEST_NORMALS[3];
     breadbox_geometry_init(&TEST_GEOMETRY);
     for(int i = 0; i < 5; i++) {
         breadbox_list_append(&TEST_GEOMETRY.vertices, (void *)&TEST_VERTICES[i]);
