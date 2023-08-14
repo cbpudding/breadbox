@@ -29,13 +29,16 @@ void view(breadbox_model_t *model) {
         material = prop->material;
         glLoadMatrixf((GLfloat *) prop->matrix);
         glBegin(GL_TRIANGLES);
-        // material->color[3] will eventually be the alpha channel. ~Alex
-        glColor3f(material->color[0], material->color[1], material->color[2]);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, material->ambient);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, material->diffuse);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, material->specular);
         for(int fid = 0; fid < prop->geometry->faces.size; fid++) {
             face = (breadbox_face_t *) prop->geometry->faces.data[fid];
-            glNormal3f(face->normal[0], face->normal[1], face->normal[2]);
+            glNormal3f((*face->na)[0], (*face->na)[1], (*face->na)[2]);
             glVertex3f((*face->a)[0], (*face->a)[1], (*face->a)[2]);
+            glNormal3f((*face->nb)[0], (*face->nb)[1], (*face->nb)[2]);
             glVertex3f((*face->b)[0], (*face->b)[1], (*face->b)[2]);
+            glNormal3f((*face->nc)[0], (*face->nc)[1], (*face->nc)[2]);
             glVertex3f((*face->c)[0], (*face->c)[1], (*face->c)[2]);
         }
         glEnd();

@@ -31,23 +31,33 @@ typedef struct {
 } breadbox_camera_t;
 
 typedef struct {
-    // The base color of the material
-    vec4 color;
+    // The ambient color of the material
+    vec4 ambient;
+    // The diffuse color of the material
+    vec4 diffuse;
+    // The specular color of the material
+    vec4 specular;
 } breadbox_material_t;
 
 // Here because it relies on breadbox_vertex_t
 typedef struct {
+    // Vertices
     vec3 *a;
     vec3 *b;
     vec3 *c;
-    vec3 normal;
+    // Normals
+    vec3 *na;
+    vec3 *nb;
+    vec3 *nc;
 } breadbox_face_t;
 
 // Here because it relies on breadbox_list_t
 typedef struct {
-    // List of unique faces in the geometry(breadbox_face_t)
+    // List of unique faces in the geometry
     breadbox_list_t faces;
-    // List of unique points in space(breadbox_vertex_t)
+    // List of unique normals
+    breadbox_list_t normals;
+    // List of unique points in space
     breadbox_list_t vertices;
 } breadbox_geometry_t;
 
@@ -187,9 +197,6 @@ void breadbox_error(const char *format, ...);
 
 // Same as above for internal use only!
 void breadbox_error_internal(breadbox_log_source_t source, const char *format, ...);
-
-// A convenience function to populate a face
-void breadbox_geometry_face(breadbox_face_t *face, vec3 *a, vec3 *b, vec3 *c);
 
 // Frees a geometry object
 void breadbox_geometry_free(breadbox_geometry_t *geometry);

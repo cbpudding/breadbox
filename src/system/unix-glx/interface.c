@@ -223,6 +223,20 @@ int main(void) {
     XSelectInput(DISPLAY, WINDOW, EVENT_MASK);
     glXMakeCurrent(DISPLAY, WINDOW, CONTEXT);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_LIGHTING);
+    // TEST LIGHT. TO BE REMOVED LATER. ~Alex
+    vec4 TEST_LIGHT[4] = {
+        {0.0, 0.0, 0.0, 1.0}, // GL_AMBIENT
+        {1.0, 1.0, 1.0, 1.0}, // GL_DIFFUSE
+        {0.33, 0.33, 0.33, 1.0}, // GL_SPECULAR
+        {1.0, 1.0, 1.0, 1.0}  // GL_POSITION
+    };
+    glLightfv(GL_LIGHT0, GL_AMBIENT, TEST_LIGHT[0]);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, TEST_LIGHT[1]);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, TEST_LIGHT[2]);
+    glLightfv(GL_LIGHT0, GL_POSITION, TEST_LIGHT[3]);
+    glEnable(GL_LIGHT0);
+    // END OF TEST LIGHT
     // NOTE: If the window ever gets resized, then we'll need to run these
     // again. ~Alex
     XGetWindowAttributes(DISPLAY, WINDOW, &winattr);
