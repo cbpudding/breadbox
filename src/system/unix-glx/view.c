@@ -29,7 +29,8 @@ void view(breadbox_model_t *model) {
         material = prop->material;
         glLoadMatrixf((GLfloat *) prop->matrix);
         glBegin(GL_TRIANGLES);
-        glColor3f(material->color.r, material->color.g, material->color.b);
+        // material->color[3] will eventually be the alpha channel. ~Alex
+        glColor3f(material->color[0], material->color[1], material->color[2]);
         for(int fid = 0; fid < prop->geometry->faces.size; fid++) {
             face = (breadbox_face_t *) prop->geometry->faces.data[fid];
             glNormal3f(face->normal[0], face->normal[1], face->normal[2]);

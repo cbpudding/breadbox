@@ -16,14 +16,23 @@ typedef struct {
 } breadbox_list_t;
 
 typedef struct {
-    float r;
-    float g;
-    float b;
-} breadbox_color_t;
+    // The aspect ratio of the camera
+    float aspect;
+    // The far plane of the camera's frustum
+    float far;
+    // The field of view of the camera
+    float fov;
+    // The camera's calculated matrix
+    mat4 matrix;
+    // The near plane of the camera's frustum
+    float near;
+    // The position of the camera
+    vec3 position;
+} breadbox_camera_t;
 
 typedef struct {
     // The base color of the material
-    breadbox_color_t color;
+    vec4 color;
 } breadbox_material_t;
 
 // Here because it relies on breadbox_vertex_t
@@ -160,6 +169,9 @@ typedef struct {
     breadbox_model_t model;
     breadbox_subscriptions_t subscriptions;
 } breadbox_t;
+
+// Recalculate the camera matrix based on its properties
+void breadbox_camera_update(breadbox_camera_t *camera);
 
 // Free resources before the game closes
 void breadbox_cleanup(breadbox_t *engine);
