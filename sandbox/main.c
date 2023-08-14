@@ -71,18 +71,9 @@ void breadbox_init(breadbox_t *engine) {
         breadbox_list_append(&TEST_GEOMETRY.faces, (void *)&TEST_FACES[i]);
     }
     // Prop Material
-    TEST_MATERIAL.ambient[0] = 0.0;
-    TEST_MATERIAL.ambient[1] = 0.0;
-    TEST_MATERIAL.ambient[2] = 0.0;
-    TEST_MATERIAL.ambient[3] = 1.0;
-    TEST_MATERIAL.diffuse[0] = 1.0;
-    TEST_MATERIAL.diffuse[1] = 1.0;
-    TEST_MATERIAL.diffuse[2] = 1.0;
-    TEST_MATERIAL.diffuse[3] = 1.0;
-    TEST_MATERIAL.specular[0] = 0.33;
-    TEST_MATERIAL.specular[1] = 0.33;
-    TEST_MATERIAL.specular[2] = 0.33;
-    TEST_MATERIAL.specular[3] = 1.0;
+    breadbox_color_convert(TEST_MATERIAL.ambient, 0x000000ff);
+    breadbox_color_convert(TEST_MATERIAL.diffuse, 0xffffffff);
+    breadbox_color_convert(TEST_MATERIAL.specular, 0x545454ff);
     // Prop
     TEST.geometry = &TEST_GEOMETRY;
     TEST.material = &TEST_MATERIAL;

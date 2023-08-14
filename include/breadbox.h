@@ -186,6 +186,9 @@ void breadbox_camera_update(breadbox_camera_t *camera);
 // Free resources before the game closes
 void breadbox_cleanup(breadbox_t *engine);
 
+// Converts a color from 32-bit RGBA into a vector
+void breadbox_color_convert(vec4 victim, uint32_t color);
+
 // Prints a debug message to the log
 void breadbox_debug(const char *format, ...);
 
