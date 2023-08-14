@@ -1,10 +1,7 @@
 Outstanding tasks:
 - (breadbox) How should mouse events be handled?
-- (breadbox) How should lighting be handled?
 - (breadbox) How should textures be handled?
-  - Does all geometry require textures or would that be too taxing on VRAM? ~Alex
-  - Maybe bundle textures in with a kind of material definition for lighting/texture definitions. ~Alex
-- (breadbox) How can we make breadbox_list_t more efficient?
+  - Textures should be handled as their own thing. Geometry contains texcoords, however it is up to the prop whether we have a texture to work with or not. ~Alex
 - (breadbox) Where to start with sound?
 
 Known Issues:
