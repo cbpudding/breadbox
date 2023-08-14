@@ -3,6 +3,10 @@ Outstanding tasks:
 - (breadbox) How should textures be handled?
   - Textures should be handled as their own thing. Geometry contains texcoords, however it is up to the prop whether we have a texture to work with or not. ~Alex
 - (breadbox) Where to start with sound?
+- (breadbox) How should motion interpolation be implemented?
+  - Maybe we can use something similar to what we have for the camera? Simply have fields such as the object's position that we generate a matrix with. Then we can have a second for where we predict it will be and interpolate that way for smooth rendering. ~Alex
+- (breadbox) How does the HUD fit into all of this?
+- (win32-d3d) Create a backend for Windows machines
 
 Known Issues:
 - (unix-glx) Some window managers simply unmap windows rather than destroying them.
