@@ -69,6 +69,7 @@ void breadbox_update(breadbox_t *engine, breadbox_message_t msg) {
             transform[3][0] = CAMERA[0];
             transform[3][1] = CAMERA[1];
             transform[3][2] = CAMERA[2];
+            glm_mat4_inv(transform, transform);
             glm_perspective(90.0, aspect, 0.125, 64.0, VIEW);
             glm_mat4_mul(VIEW, transform, VIEW);
             break;
