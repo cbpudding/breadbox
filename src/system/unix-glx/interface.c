@@ -225,7 +225,7 @@ int main(void) {
     glEnable(GL_CULL_FACE);
     glFrontFace(GL_CW);
     glEnable(GL_DEPTH_TEST);
-    //glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHTING);
     // TEST LIGHT. TO BE REMOVED LATER. ~Alex
     vec4 TEST_LIGHT[4] = {
         {0.0, 0.0, 0.0, 1.0}, // GL_AMBIENT
