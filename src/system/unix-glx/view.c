@@ -27,6 +27,7 @@ void view(breadbox_model_t *model) {
     } else {
         glLoadIdentity();
     }
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, model->ambient);
     // glDisable and glEnable are expensive so it's best to only run them if we
     // need them. We'll disable lights if we have too many enabled and enable
     // lights if we have too many disabled. Of course, we'll also need to cap

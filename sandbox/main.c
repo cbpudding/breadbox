@@ -32,10 +32,7 @@ void breadbox_cleanup(breadbox_t *engine) {
 
 void breadbox_init(breadbox_t *engine) {
     // Stage setup
-    engine->model.ambient[0] = 0.0;
-    engine->model.ambient[1] = 0.0;
-    engine->model.ambient[2] = 0.0;
-    engine->model.ambient[3] = 1.0;
+    breadbox_color_convert(engine->model.ambient, 0x545454ff);
     // Subscriptions
     breadbox_subscribe(&engine->subscriptions, BBMSG_TICK);
     // Camera
@@ -78,7 +75,7 @@ void breadbox_init(breadbox_t *engine) {
         breadbox_list_append(&TEST_GEOMETRY.faces, (void *)&TEST_FACES[i]);
     }
     // Prop Material
-    breadbox_color_convert(TEST_MATERIAL.ambient, 0x000000ff);
+    breadbox_color_convert(TEST_MATERIAL.ambient, 0x545454ff);
     breadbox_color_convert(TEST_MATERIAL.diffuse, 0xffffffff);
     breadbox_color_convert(TEST_MATERIAL.specular, 0x545454ff);
     // Prop
@@ -87,18 +84,12 @@ void breadbox_init(breadbox_t *engine) {
     glm_mat4_identity(TEST_PROP.matrix);
     breadbox_list_append(&engine->model.props, (void *)&TEST_PROP);
     // Light
-    TEST_LIGHT.diffuse[0] = 1.0;
-    TEST_LIGHT.diffuse[1] = 1.0;
-    TEST_LIGHT.diffuse[2] = 1.0;
-    TEST_LIGHT.diffuse[3] = 1.0;
+    breadbox_color_convert(TEST_LIGHT.diffuse, 0xffffffff);
     TEST_LIGHT.position[0] = 1.0;
     TEST_LIGHT.position[1] = 0.75;
     TEST_LIGHT.position[2] = 0.0;
     TEST_LIGHT.position[3] = 1.0;
-    TEST_LIGHT.specular[0] = 0.33;
-    TEST_LIGHT.specular[1] = 0.33;
-    TEST_LIGHT.specular[2] = 0.33;
-    TEST_LIGHT.specular[3] = 1.0;
+    breadbox_color_convert(TEST_LIGHT.specular, 0x545454ff);
     breadbox_list_append(&engine->model.lights, (void *)&TEST_LIGHT);
     // ...
     breadbox_info("Sandbox started");
