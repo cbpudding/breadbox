@@ -1,3 +1,6 @@
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 #include "breadbox.h"
 
 vec3 TEST_NORMALS[5] = {
@@ -89,8 +92,8 @@ void breadbox_init(breadbox_t *engine) {
     TEST_LIGHT.diffuse[2] = 1.0;
     TEST_LIGHT.diffuse[3] = 1.0;
     TEST_LIGHT.position[0] = 1.0;
-    TEST_LIGHT.position[1] = 1.0;
-    TEST_LIGHT.position[2] = 1.0;
+    TEST_LIGHT.position[1] = 0.75;
+    TEST_LIGHT.position[2] = 0.0;
     TEST_LIGHT.position[3] = 1.0;
     TEST_LIGHT.specular[0] = 0.33;
     TEST_LIGHT.specular[1] = 0.33;
@@ -102,8 +105,11 @@ void breadbox_init(breadbox_t *engine) {
 }
 
 void breadbox_update(breadbox_t *engine, breadbox_message_t msg) {
+    float angle = ((float)(engine->subscriptions.tick % 80) / 80.0) * (M_PI * 2);
     switch(msg) {
         case BBMSG_TICK:
+            TEST_LIGHT.position[0] = sinf(angle) * 2.0;
+            TEST_LIGHT.position[2] = cosf(angle) * 2.0;
             CAMERA.aspect = (float)engine->subscriptions.width / (float)engine->subscriptions.height;
             CAMERA.position[0] += engine->subscriptions.axes[0] * 0.05;
             CAMERA.position[1] += engine->subscriptions.axes[1] * 0.05;

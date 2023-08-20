@@ -3,9 +3,12 @@ Outstanding tasks:
 - (breadbox) How should textures be handled?
   - Textures should be handled as their own thing. Geometry contains texcoords, however it is up to the prop whether we have a texture to work with or not. ~Alex
 - (breadbox) Where to start with sound?
+  - Pulseaudio might be a good choice for supporting multiple Unix-based systems(Linux, BSD, Illumos, etc.) ~Alex
 - (breadbox) How should motion interpolation be implemented?
   - Maybe we can use something similar to what we have for the camera? Simply have fields such as the object's position that we generate a matrix with. Then we can have a second for where we predict it will be and interpolate that way for smooth rendering. ~Alex
+  - Interpolating matrices can be messy. Maybe we should have a utility called breadbox_interp_t for properly interpolating matrices mid-tick. That just leaves the camera. ~Alex
 - (breadbox) How does the HUD fit into all of this?
+  - The HUD is simply geometry that isn't effected by the camera. Lighting might have to be disabled to properly render the HUD. I'll wait for textures before I start to work on this. ~Alex
 - (win32-d3d) Create a backend for Windows machines
 
 Known Issues:
