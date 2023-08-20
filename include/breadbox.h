@@ -70,6 +70,15 @@ typedef struct {
     mat4 matrix;
 } breadbox_prop_t;
 
+typedef struct {
+    // Diffuse color of the light
+    vec4 diffuse;
+    // Position of the light
+    vec4 position;
+    // Specular color of the light
+    vec4 specular;
+} breadbox_light_t;
+
 typedef enum {
     BBLOG_DEBUG,
     BBLOG_ERROR,
@@ -155,6 +164,10 @@ typedef enum {
 } breadbox_message_t;
 
 typedef struct {
+    // The ambient light color
+    vec4 ambient;
+    // List of all the lights(breadbox_light_t) in the game
+    breadbox_list_t lights;
     // List of all the props(breadbox_prop_t) in the game
     breadbox_list_t props;
     // The view matrix

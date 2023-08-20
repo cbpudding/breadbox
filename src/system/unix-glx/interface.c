@@ -61,6 +61,7 @@ Display *DISPLAY;
 breadbox_t ENGINE;
 struct timespec EPOCH;
 breadbox_list_t INPUT_PROGRAM;
+int MAX_LIGHTS;
 Window WINDOW;
 
 // Predefinition for get_subtick here because breadbox_log relies on it. ~Alex
@@ -226,19 +227,7 @@ int main(void) {
     glFrontFace(GL_CW);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LIGHTING);
-    // TEST LIGHT. TO BE REMOVED LATER. ~Alex
-    vec4 TEST_LIGHT[4] = {
-        {0.0, 0.0, 0.0, 1.0}, // GL_AMBIENT
-        {1.0, 1.0, 1.0, 1.0}, // GL_DIFFUSE
-        {0.33, 0.33, 0.33, 1.0}, // GL_SPECULAR
-        {1.0, 1.0, 1.0, 1.0}  // GL_POSITION
-    };
-    glLightfv(GL_LIGHT0, GL_AMBIENT, TEST_LIGHT[0]);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, TEST_LIGHT[1]);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, TEST_LIGHT[2]);
-    glLightfv(GL_LIGHT0, GL_POSITION, TEST_LIGHT[3]);
-    glEnable(GL_LIGHT0);
-    // END OF TEST LIGHT
+    glGetIntegerv(GL_MAX_LIGHTS, &MAX_LIGHTS);
     // NOTE: If the window ever gets resized, then we'll need to run these
     // again. ~Alex
     XGetWindowAttributes(DISPLAY, WINDOW, &winattr);

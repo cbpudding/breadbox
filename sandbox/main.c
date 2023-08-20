@@ -19,14 +19,20 @@ vec3 TEST_VERTICES[5] = {
 breadbox_camera_t CAMERA;
 breadbox_face_t TEST_FACES[6];
 breadbox_geometry_t TEST_GEOMETRY;
+breadbox_light_t TEST_LIGHT;
 breadbox_material_t TEST_MATERIAL;
-breadbox_prop_t TEST;
+breadbox_prop_t TEST_PROP;
 
 void breadbox_cleanup(breadbox_t *engine) {
     breadbox_geometry_free(&TEST_GEOMETRY);
 }
 
 void breadbox_init(breadbox_t *engine) {
+    // Stage setup
+    engine->model.ambient[0] = 0.0;
+    engine->model.ambient[1] = 0.0;
+    engine->model.ambient[2] = 0.0;
+    engine->model.ambient[3] = 1.0;
     // Subscriptions
     breadbox_subscribe(&engine->subscriptions, BBMSG_TICK);
     // Camera
@@ -73,10 +79,24 @@ void breadbox_init(breadbox_t *engine) {
     breadbox_color_convert(TEST_MATERIAL.diffuse, 0xffffffff);
     breadbox_color_convert(TEST_MATERIAL.specular, 0x545454ff);
     // Prop
-    TEST.geometry = &TEST_GEOMETRY;
-    TEST.material = &TEST_MATERIAL;
-    glm_mat4_identity(TEST.matrix);
-    breadbox_list_append(&engine->model.props, (void *)&TEST);
+    TEST_PROP.geometry = &TEST_GEOMETRY;
+    TEST_PROP.material = &TEST_MATERIAL;
+    glm_mat4_identity(TEST_PROP.matrix);
+    breadbox_list_append(&engine->model.props, (void *)&TEST_PROP);
+    // Light
+    TEST_LIGHT.diffuse[0] = 1.0;
+    TEST_LIGHT.diffuse[1] = 1.0;
+    TEST_LIGHT.diffuse[2] = 1.0;
+    TEST_LIGHT.diffuse[3] = 1.0;
+    TEST_LIGHT.position[0] = 1.0;
+    TEST_LIGHT.position[1] = 1.0;
+    TEST_LIGHT.position[2] = 1.0;
+    TEST_LIGHT.position[3] = 1.0;
+    TEST_LIGHT.specular[0] = 0.33;
+    TEST_LIGHT.specular[1] = 0.33;
+    TEST_LIGHT.specular[2] = 0.33;
+    TEST_LIGHT.specular[3] = 1.0;
+    breadbox_list_append(&engine->model.lights, (void *)&TEST_LIGHT);
     // ...
     breadbox_info("Sandbox started");
 }
