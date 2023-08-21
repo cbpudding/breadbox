@@ -1,4 +1,4 @@
-CFLAGS=-I../include -lGL -lm -lX11
+CFLAGS=-I../include -lGL -lm -lpulse -lX11
 
 .PHONY: unix-glx
 

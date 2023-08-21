@@ -12,6 +12,7 @@
 
 #include <GL/gl.h>
 #include <GL/glx.h>
+#include <pulse/pulseaudio.h>
 #include <X11/Xlib.h>
 
 #include "breadbox.h"
@@ -62,6 +63,8 @@ breadbox_t ENGINE;
 struct timespec EPOCH;
 breadbox_list_t INPUT_PROGRAM;
 int MAX_LIGHTS;
+pa_mainloop *PA_MAINLOOP;
+pa_context *PULSE;
 Window WINDOW;
 
 // Predefinition for get_subtick here because breadbox_log relies on it. ~Alex
@@ -96,6 +99,9 @@ void breadbox_log(
 }
 
 void breadbox_quit(void) {
+    pa_context_disconnect(PULSE);
+    pa_context_unref(PULSE);
+    pa_mainloop_free(PA_MAINLOOP);
     glXMakeCurrent(DISPLAY, None, NULL);
     glXDestroyContext(DISPLAY, CONTEXT);
     // TODO: What if the window hasn't been destroyed yet? ~Alex
@@ -150,6 +156,7 @@ int main(void) {
     int expected_tick;
     int input_changed = 0;
     FILE *input_script;
+    pa_mainloop_api *mainloop_api;
     breadbox_message_t msg;
     struct timespec now;
     XVisualInfo *visinfo;
@@ -214,7 +221,6 @@ int main(void) {
     }
     if(!(input_script = fopen("input.fth", "r"))) {
         breadbox_error_internal(BBLOG_SYSTEM, "main: Failed to read input.fth");
-        breadbox_quit();
     }
     input_init();
     input_parse(&INPUT_PROGRAM, input_script);
@@ -234,6 +240,24 @@ int main(void) {
     glViewport(0, 0, winattr.width, winattr.height);
     ENGINE.subscriptions.height = winattr.height;
     ENGINE.subscriptions.width = winattr.width;
+    // Time to finally start initializing audio! ~Alex
+    PA_MAINLOOP = pa_mainloop_new();
+    mainloop_api = pa_mainloop_get_api(PA_MAINLOOP);
+    PULSE = pa_context_new(mainloop_api, "Breadbox");
+    if(pa_context_connect(PULSE, NULL, PA_CONTEXT_NOFLAGS, NULL)) {
+        breadbox_error_internal(BBLOG_SYSTEM, "main: Failed to initialize Pulseaudio: %s", pa_strerror(pa_context_errno(PULSE)));
+        pa_context_unref(PULSE);
+        pa_mainloop_free(PA_MAINLOOP);
+        glXMakeCurrent(DISPLAY, None, NULL);
+        glXDestroyContext(DISPLAY, CONTEXT);
+        free(ATOMS);
+        XCloseDisplay(DISPLAY);
+        input_free(&INPUT_PROGRAM);
+        breadbox_cleanup(&ENGINE);
+        breadbox_model_free(&ENGINE.model);
+        return 1;
+    }
+    // ...
     // Wait until everything else has been initialized before calling the game!
     // ~Alex
     breadbox_init(&ENGINE);
